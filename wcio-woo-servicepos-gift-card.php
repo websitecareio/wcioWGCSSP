@@ -36,8 +36,8 @@ class wcioWGCSSP {
              $myUpdateChecker->getVcsApi()->enableReleaseAssets();
 
             //Optional: If you're using a private repository, specify the access token like this:
-            $token = "15a7ca9ab759aa18ddc26ad0de272c2a";
-            $myUpdateChecker->setAuthentication(md5_decode($token));
+            $token = "Z2hwX2FPUGppSTQ3QUlnMFh0SDZ2YjZ5OTZ1YUdkYUtGajBBZkh0Ng==";
+            $myUpdateChecker->setAuthentication(base64_decode($token));
 
             //Optional: Set the branch that contains the stable release.
             $myUpdateChecker->setBranch('main');
