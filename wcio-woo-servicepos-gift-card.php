@@ -380,5 +380,3 @@ class wcioWGCSSP {
 }
 
 $wcioWGCSSP = new wcioWGCSSP();
-
-?>
