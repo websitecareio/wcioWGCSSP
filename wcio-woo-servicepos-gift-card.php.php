@@ -1,11 +1,12 @@
 <?php
-/*
-Plugin Name: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
-Plugin URI:
-Description:
-Version: 1.0.2
-Author: Websitecare.io
-*/
+/**
+ * Plugin Name: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
+ * Plugin URI: websitecare.io
+ * Description: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
+ * Version: 1.0.2
+ * Author: Kim Vinberg
+ * Author URI: websitecare.io
+ */
 
 
 include("wooCommerceSettings.php");
