@@ -3,7 +3,7 @@
 Plugin Name: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
 Plugin URI:
 Description:
-Version: 1.0.1
+Version: 1.0.2
 Author: Websitecare.io
 */
 
