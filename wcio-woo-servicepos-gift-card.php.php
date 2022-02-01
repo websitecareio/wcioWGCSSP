@@ -27,9 +27,9 @@ class wcioWGCSSP {
             // Check for updates.
             require dirname(__FILE__) . "/plugin-update-checker/plugin-update-checker.php";
             $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-              'https://github.com/websitecareio/wcioWGCSSP/',
+              'https://github.com/websitecareio/wcio-woo-servicepos-gift-card/',
               __FILE__,
-              'affiliate-hub-client'
+              'wcio-woo-servicepos-gift-card'
             );
 
              $myUpdateChecker->getVcsApi()->enableReleaseAssets();
