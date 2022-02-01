@@ -379,6 +379,6 @@ class wcioWGCSSP {
 
 }
 
-$wcioWGCSSP = new wcioWGCSSP;
+$wcioWGCSSP = new wcioWGCSSP();
 
 ?>
