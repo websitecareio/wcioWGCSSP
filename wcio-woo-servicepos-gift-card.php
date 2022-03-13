@@ -3,7 +3,7 @@
  * Plugin Name: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
  * Plugin URI: websitecare.io
  * Description: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
- * Version: 1.0.4
+ * Version: 1.0.5
  * Author: Kim Vinberg
  * Author URI: websitecare.io
  */
@@ -25,24 +25,23 @@ class wcioWGCSSP {
             add_action( 'wcio_wgcssp_cron_sync_woo_service_pos', array( $this, 'wcio_wgcssp_cron_sync_woo_service_pos' ));
             add_action( 'wcio_wgcssp_cron_sync_service_pos_woo', array( $this, 'wcio_wgcssp_cron_sync_service_pos_woo' ));
 
-            // Check for updates.
+            // Updates and settings
+            add_action( 'admin_init', array( $this, 'myplugin_register_settings') );
+            add_action('admin_menu', array( $this, 'myplugin_register_options_page') );
+
+            $slug = "wcio-woo-servicepos-gift-card";
+            $token = get_option( 'wcio-dm-api-key' );
             require dirname(__FILE__) . "/plugin-update-checker/plugin-update-checker.php";
             $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-              'https://github.com/websitecareio/wcio-woo-servicepos-gift-card/',
+              'https://websitecare.io/wp-json/wcio/product/'.$slug.'/update/?token='.$token.'',
               __FILE__,
-              'wcio-woo-servicepos-gift-card'
+              $slug // Product slug
             );
 
-             $myUpdateChecker->getVcsApi()->enableReleaseAssets();
-
-            //Optional: If you're using a private repository, specify the access token like this:
-            $token = "Z2hwX2FPUGppSTQ3QUlnMFh0SDZ2YjZ5OTZ1YUdkYUtGajBBZkh0Ng==";
-            $myUpdateChecker->setAuthentication(base64_decode($token));
-
-            //Optional: Set the branch that contains the stable release.
-            $myUpdateChecker->setBranch('main');
 
     }
+
+
 
     function activatePlugin() {
 
