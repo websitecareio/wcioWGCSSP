@@ -3,7 +3,7 @@
  * Plugin Name: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
  * Plugin URI: websitecare.io
  * Description: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
- * Version: 1.0.5
+ * Version: 1.0.6
  * Author: Kim Vinberg
  * Author URI: websitecare.io
  */
@@ -361,7 +361,7 @@ class wcioWGCSSP {
         private function codeToServicePos($code) {
             // Input XXXX-XXXX-XXXX-XXXX
             // Output: 724503989151  (12 char)()
-            $code = str_replace("X", "", $code); // removes X s that have been added to match format.
+            $code = str_replace("XXXX", "", $code); // removes X s that have been added to match format.
             $code = str_replace("-", "", $code); // Removes - s that have been added to match format.
           return $code; // outputs a ServicePOS gift card.
         }
