@@ -41,6 +41,36 @@ class wcioWGCSSP {
 
     }
 
+// Add this to your function. It will add the option field for the API key
+
+// Updates and settings
+function myplugin_register_settings() {
+    add_option( 'wcio-dm-api-key', '');
+    register_setting( 'wcio-dm-options-group', 'wcio-dm-api-key', 'myplugin_callback' );
+}
+
+function myplugin_register_options_page() {
+    add_options_page('Digital manager', 'Digital Manager', 'manage_options', 'myplugin', array($this, 'myplugin_options_page') );
+}
+
+function myplugin_options_page() {
+?>
+    <div>
+    <?php screen_icon(); ?>
+    <h2>Digital manager options</h2>
+    <form method="post" action="options.php">
+    <?php settings_fields( 'wcio-dm-options-group' ); ?>
+     <table>
+    <tr valign="top">
+    <th scope="row"><label for="wcio-dm-api-key">API key</label></th>
+    <td><input type="text" id="wcio-dm-api-key" name="wcio-dm-api-key" value="<?php echo get_option('wcio-dm-api-key'); ?>" placeholder="Enter API key" /></td>
+    </tr>
+    </table>
+    <?php  submit_button(); ?>
+    </form>
+    </div>
+<?php
+}
 
 
     function activatePlugin() {
