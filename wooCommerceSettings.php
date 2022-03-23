@@ -22,6 +22,11 @@
  *
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class WC_wciowgcssp {
 
     /*
@@ -78,16 +83,25 @@ class WC_wciowgcssp {
 
         $settings = array(
             'section_title' => array(
-                'name'     => __( 'Section Title', 'woocommerce-settings-tab-demo' ),
+                'name'     => __( 'WooCOmmerce SYNC ServicePOS setings', 'woocommerce-settings-tab-demo' ),
                 'type'     => 'title',
                 'desc'     => '',
                 'id'       => 'wc_wciowgcssp_section_title'
             ),
-            'title' => array(
+            'wc_wciowgcssp_token' => array(
                 'name' => __( 'ServicePOS Token', 'woocommerce-settings-tab-demo' ),
                 'type' => 'text',
                 'desc' => __( 'Token can be found at https://app.detalteq.com/en -> Settings -> Generel -> Users. Only users that are not shop users have their API token displayed on the settings page.', 'woocommerce-settings-tab-demo' ),
                 'id'   => 'wc_wciowgcssp_token'
+            ),
+            'wc_wciowgcssp_giftcardplugin' => array(
+                'name' => __( 'Gift card plugin', 'woocommerce-settings-tab-demo' ),
+                'type' => 'select',
+                'options' => array( 
+                      'woo-gift-cards' => __('WooCommerce Gift Cards'),
+                  ),      
+                'desc' => __( '', 'woocommerce-settings-tab-demo' ),
+                'id'   => 'wc_wciowgcssp_giftcardplugin'
             ),
             'section_end' => array(
                  'type' => 'sectionend',
