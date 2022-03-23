@@ -2,28 +2,42 @@
 /**
  * Plugin Name: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
  * Plugin URI: websitecare.io
- * Description: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
- * Version: 1.0.8
+ * Description: Syncronises 
+ * Version: 1.0.9
  * Author: Kim Vinberg
  * Author URI: websitecare.io
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 include("wooCommerceSettings.php");
 
 register_activation_hook( __FILE__, array('wcioWGCSSP', 'activatePlugin') );
 
+/* Main plugin functions */
 class wcioWGCSSP {
 
     private $token;
+    private $giftcardplugin;
 
     function __construct()
     {
 
-            $this->token = get_option("wc_wciowgcssp_token");
+            $this->token = get_option("wc_wciowgcssp_token"); // ServicePOS token
+            $this->giftcardplugin = get_option("wc_wciowgcssp_giftcardplugin") ?? ""; // Gift card plugin you want to use.
 
             add_action( 'wcio_wgcssp_cron_sync_woo_service_pos', array( $this, 'wcio_wgcssp_cron_sync_woo_service_pos' ));
             add_action( 'wcio_wgcssp_cron_sync_service_pos_woo', array( $this, 'wcio_wgcssp_cron_sync_service_pos_woo' ));
+
+            // Add JS to cart page based on the plugin used
+            if($this->giftcardplugin == "woo-gift-cards" || $this->giftcardplugin == "") {
+
+                  add_action( 'wp_footer', array( $this, 'woo_gift_cards_checkout_script'), 9999 );
+
+            }
 
             // Updates and settings
             add_action( 'admin_init', array( $this, 'myplugin_register_settings') );
@@ -71,8 +85,7 @@ function myplugin_options_page() {
     </div>
 <?php
 }
-
-
+ 
     function activatePlugin() {
 
         if ( ! wp_next_scheduled( 'wcio_wgcssp_cron_sync_woo_service_pos' ) ) {
@@ -85,6 +98,41 @@ function myplugin_options_page() {
 
     }
 
+    
+    /**
+     * Adds JS to the footer is the plugin is set to Woo Gift Card
+    */
+    function woo_gift_cards_checkout_script() {
+            global $wp; 
+            if ( is_checkout() && empty( $wp->query_vars['order-pay'] ) && ! isset( $wp->query_vars['order-received'] ) ) {
+                  echo '<script>
+
+                  function pad (str, max) {
+                        str = str.toString();
+                        return str.length < max ? pad(str + "X", max) : str;
+                      }
+
+                  jQuery(function($) {
+                        $("input[name=coupon_code]").keyup(function() {
+                              var foo = $(this).val().split("-").join(""); // remove hyphens
+                              if (foo.length > 0) {
+                                    foo = foo.match(new RegExp(".{1,4}", "g")).join("-");
+                              }
+                              
+                              value = $(this).val();
+                              if(value.length == "12")  {
+                                    
+                                    $(this).val(pad(foo, 18));
+                                    
+                              } else {
+                                    $(this).val(foo);
+                              }
+                              
+                        });
+                  });
+                  </script>';
+            }
+      }
 
     // Call ServicePOS
     function call($method, $endpoint, $data = false)
