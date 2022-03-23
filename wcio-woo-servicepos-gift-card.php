@@ -3,7 +3,7 @@
  * Plugin Name: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
  * Plugin URI: websitecare.io
  * Description: Websitecare.io - WooCommerce Gift Cards SYNC servicepos.com
- * Version: 1.0.6
+ * Version: 1.0.7
  * Author: Kim Vinberg
  * Author URI: websitecare.io
  */
@@ -203,7 +203,7 @@ function myplugin_options_page() {
 
 
 
-            $query = array("giftcardno" => $this->codeToServicePos($code));
+            $query = array("giftcardno" => $this->codeToServicePos($code), "paginationPageLength" => 1000);
             $queryGiftcards = $this->call("GET", "/giftcards", $query);
 
             // If gift card was found at ServicePOS.
