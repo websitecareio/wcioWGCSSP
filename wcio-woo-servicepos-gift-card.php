@@ -203,7 +203,7 @@ function myplugin_options_page() {
 
 
 
-            $query = array("giftcardno" => $this->codeToServicePos($code), "paginationPageLength" => 1000);
+            $query = array("giftcardno" => $this->codeToServicePos($code));
             $queryGiftcards = $this->call("GET", "/giftcards", $query);
 
             // If gift card was found at ServicePOS.
@@ -289,6 +289,9 @@ function myplugin_options_page() {
       global $wpdb;
       $table_prefix = $wpdb->prefix;
       $WooCommerceGiftCardTableName = "woocommerce_gc_cards";
+       
+      // Sets the amount of gift cards per page.
+      $query = array("paginationPageLength" => 1000);
 
       $giftcards = $this->call("GET", "/giftcards", $query);
 
