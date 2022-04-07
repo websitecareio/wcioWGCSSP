@@ -98,7 +98,8 @@ class WC_wciowgcssp {
                 'name' => __( 'Gift card plugin', 'woocommerce-settings-tab-demo' ),
                 'type' => 'select',
                 'options' => array( 
-                      'woo-gift-cards' => __('WooCommerce Gift Cards'),
+                  'woo-gift-cards' => __('WooCommerce Gift Cards'),
+                  'flexible-pdf-coupons' => __('Flexible PDF Coupons for WooCommerce'),
                   ),      
                 'desc' => __( '', 'woocommerce-settings-tab-demo' ),
                 'id'   => 'wc_wciowgcssp_giftcardplugin'
