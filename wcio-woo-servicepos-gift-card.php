@@ -3,7 +3,7 @@
  * Plugin Name: Woo Gift Cards synchronize Servicepos.com
  * Plugin URI: https://websitecare.io/wordpress-plugins/woocommerce-servicepos-sync/
  * Description: Synchronize WooCommerce gift cards with ServicePOS 
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Websitecare.io
  * Author URI: https://websitecare.io
  */
@@ -20,14 +20,15 @@ register_activation_hook( __FILE__, array('wcioWGCSSP', 'activatePlugin') );
 /* Main plugin functions */
 class wcioWGCSSP {
 
-    private $token;
-    private $giftcardplugin;
-    private $wcioWGCSSPservice;
+    public  $token;
+    public $giftcardplugin;
+    public $wcioWGCSSPservice;
 
-    function __construct()
+    public function __construct()
     {
 
             $this->token = get_option("wc_wciowgcssp_token"); // ServicePOS token
+
             $this->giftcardplugin = get_option("wc_wciowgcssp_giftcardplugin") ?? ""; // Gift card plugin you want to use.
 
 
@@ -53,10 +54,10 @@ class wcioWGCSSP {
             add_action('admin_menu', array( $this, 'myplugin_register_options_page') );
 
             $slug = "wcio-woo-servicepos-gift-card";
-            $token = get_option( 'wcio-dm-api-key' );
+            $updateToken = get_option( 'wcio-dm-api-key' );
             require dirname(__FILE__) . "/plugin-update-checker/plugin-update-checker.php";
             $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-              'https://websitecare.io/wp-json/wcio/product/'.$slug.'/update/?token='.$token.'',
+              'https://websitecare.io/wp-json/wcio/product/'.$slug.'/update/?token='.$updateToken.'',
               __FILE__,
               $slug // Product slug
             );
@@ -112,8 +113,8 @@ function myplugin_options_page() {
 
 
     // Call ServicePOS
-    function call($method, $endpoint, $data = false)
-    {
+    function call($method, $endpoint, $data = false) {       
+       
         $url = 'https://app.deltateq.com/api' . $endpoint;
         $curl = curl_init();
         switch ($method) {
@@ -140,6 +141,7 @@ function myplugin_options_page() {
             'Content-Type: application/json',
             'Authorization: Bearer ' . $this->token,
         ));
+
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         $result = curl_exec($curl);
