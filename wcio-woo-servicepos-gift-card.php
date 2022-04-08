@@ -3,7 +3,7 @@
  * Plugin Name: Woo Gift Cards synchronize Servicepos.com
  * Plugin URI: https://websitecare.io/wordpress-plugins/woocommerce-servicepos-sync/
  * Description: Synchronize WooCommerce gift cards with ServicePOS 
- * Version: 1.1.2
+ * Version: 1.1.3
  * Author: Websitecare.io
  * Author URI: https://websitecare.io
  */
@@ -45,6 +45,9 @@ class wcioWGCSSP {
                   include(dirname(__FILE__)."/includes/flexible-pdf-coupons.php");
    
             }
+	    
+	    // Add cron sheduels
+	    add_filter( 'cron_schedules', array( $this, 'add_cron_interval') );
            
             // Add service class
             $this->wcioWGCSSPservice = new wcioWGCSSPservice();
@@ -97,14 +100,21 @@ function myplugin_options_page() {
 <?php
 }
  
+	function add_cron_interval( $schedules ) { 
+    $schedules['five_minutes'] = array(
+        'interval' => 300,
+        'display'  => esc_html__( 'Every Five Minute' ), );
+    return $schedules;
+}
+	
     function activatePlugin() {
 
         if ( ! wp_next_scheduled( 'wcio_wgcssp_cron_sync_woo_service_pos' ) ) {
-            wp_schedule_event( time(), 'every_minute', 'wcio_wgcssp_cron_sync_woo_service_pos' );
+            wp_schedule_event( time(), 'five_minutes', 'wcio_wgcssp_cron_sync_woo_service_pos' );
         }
 
         if ( ! wp_next_scheduled( 'wcio_wgcssp_cron_sync_service_pos_woo' ) ) {
-            wp_schedule_event( time(), 'every_minute', 'wcio_wgcssp_cron_sync_service_pos_woo' );
+            wp_schedule_event( time(), 'five_minutes', 'wcio_wgcssp_cron_sync_service_pos_woo' );
         }
 
     }
