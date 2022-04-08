@@ -172,6 +172,7 @@ class wcioWGCSSPservice extends wcioWGCSSP {
                               ];
                   
                               $createServicePOSGiftcard = $this->call("POST", "/giftcards",  ['content' => $giftcard]);
+			      sleep(1); // Sleep to allow ServicePOS API to recover its limit. 
                               continue;
                   
                         
