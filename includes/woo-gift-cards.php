@@ -128,7 +128,7 @@ class wcioWGCSSPservice extends wcioWGCSSP {
                                                       
                                                 // Update giftcard in servicePOS
                                                 $updateServicePOSGiftcard = $this->call("PUT", "/giftcards/".$giftcard["id"]."", ['content' => $giftcardData]);
-						sleep(1); // Sleep to allow ServicePOS API to recover its limit.
+						sleep(3); // Sleep to allow ServicePOS API to recover its limit.
                                                 continue;
 
                                           } else {
@@ -172,7 +172,7 @@ class wcioWGCSSPservice extends wcioWGCSSP {
                               ];
                   
                               $createServicePOSGiftcard = $this->call("POST", "/giftcards",  ['content' => $giftcard]);
-			      sleep(1); // Sleep to allow ServicePOS API to recover its limit. 
+			      sleep(3); // Sleep to allow ServicePOS API to recover its limit. 
                               continue;
                   
                         
