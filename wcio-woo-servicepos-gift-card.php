@@ -3,7 +3,7 @@
  * Plugin Name: Woo Gift Cards synchronize Servicepos.com
  * Plugin URI: https://websitecare.io/wordpress-plugins/woocommerce-servicepos-sync/
  * Description: Synchronize WooCommerce gift cards with ServicePOS 
- * Version: 1.1.4
+ * Version: 1.1.5
  * Author: Websitecare.io
  * Author URI: https://websitecare.io
  */
@@ -45,10 +45,10 @@ class wcioWGCSSP {
                   include(dirname(__FILE__)."/includes/flexible-pdf-coupons.php");
    
             }
-	    
-	    // Add cron sheduels
-	    add_filter( 'cron_schedules', array( $this, 'add_cron_interval') );
-           
+                       
+            // Add cron sheduels
+            add_filter( 'cron_schedules', array( $this, 'add_cron_interval') );
+
             // Add service class
             $this->wcioWGCSSPservice = new wcioWGCSSPservice();
 
@@ -64,9 +64,66 @@ class wcioWGCSSP {
               __FILE__,
               $slug // Product slug
             );
+		
+			// Add options
+		  	add_action('admin_init', array($this, 'custom_plugin_register_settings'));
+			add_action('admin_menu', array($this, 'custom_plugin_setting_page'));
 
 
     }
+
+	
+	  /*
+	   *  Add options
+	   * 
+	   */
+		function custom_plugin_register_settings() {
+ 
+			register_setting('wcio_wgcssp_service_option_group', 'wcio_wgcssp_last_action'); // Used to make sure the plugin does not keep running when not neeeded.
+	
+	}
+	
+	function custom_plugin_setting_page() {
+	
+		add_options_page('WordPress sync ServicePOS', 'WordPress sync ServicePOS', 'manage_options', 'wcio_wgcssp_service_option',  array($this, 'custom_page_html_form'));
+		
+	}
+	
+	function custom_page_html_form() { ?>
+			<div class="wrap">
+				<h2>Settings for WordPress sync ServicePOS</h2>
+				<form method="post" action="options.php">
+					<?php 
+									  settings_fields('wcio_wgcssp_service_option_group'); 
+					?>
+
+				<table class="form-table">
+
+					<tr>
+						<th><label for="first_field_id">Last action:</label></th>
+
+						<td><p>Last action is when the plugin last had an action and will make sure the plugin doesnt spin in a loop.<br>This field value should look something like this <?php echo time(); ?>.<br>Do not empty this field unless its for testing.
+							</p>
+		<input type = 'text' class="regular-text" id="wcio_wgcssp_last_action_id" name="wcio_wgcssp_last_action" value="<?php echo get_option('wcio_wgcssp_last_action'); ?>">
+						</td>
+					</tr>
+				
+				
+									<tr>
+						<th><label for="first_field_id">Last logged actions:</label></th>
+
+										<td>
+											<p>Click here to view the log file: <a href="/wp-content/uploads/wcio_wgcssp_service.txt" target="_blank">Log file</a></p>
+						</td>
+					</tr>
+
+				</table>
+
+				<?php submit_button(); ?>
+
+			</div>
+		<?php
+	} 
 
  
 // Add this to your function. It will add the option field for the API key
@@ -99,14 +156,15 @@ function myplugin_options_page() {
     </div>
 <?php
 }
+
+function add_cron_interval( $schedules ) {
+      $schedules['five_minutes'] = array(
+          'interval' => 300,
+          'display'  => esc_html__( 'Every Five Minute' ), );
+      return $schedules;
+  }
+       
  
-	function add_cron_interval( $schedules ) { 
-    $schedules['five_minutes'] = array(
-        'interval' => 300,
-        'display'  => esc_html__( 'Every Five Minute' ), );
-    return $schedules;
-}
-	
     function activatePlugin() {
 
         if ( ! wp_next_scheduled( 'wcio_wgcssp_cron_sync_woo_service_pos' ) ) {
@@ -167,6 +225,19 @@ function myplugin_options_page() {
             ";
         }
         curl_close($curl);
+		
+	$logfile = dirname(__FILE__)."/../../uploads/wcio_wgcssp_service.txt";
+	// Check if we need to clean log
+      if(filesize($logfile) > "10000000") { // If above 10 mb
+      unlink($logfile);
+      }
+		
+		
+	// Log this call
+      $log  = date("d-m-Y H:i:s").",".time().",$result,".json_encode($method).", ".json_encode($endpoint).", ".json_encode($data)."".PHP_EOL;
+      //Save string to log, use FILE_APPEND to append.
+      file_put_contents($logfile, $log, FILE_APPEND);
+		
         return json_decode($result, true);
     }
     
