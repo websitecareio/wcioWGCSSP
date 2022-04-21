@@ -20,9 +20,12 @@ class wcioWGCSSPservice extends wcioWGCSSP {
                         
                         // Add JS to cart page based on the plugin used
                         add_action( 'wp_footer', array($this, 'woo_gift_cards_checkout_script'), 9999 );
-            
-      }
+            			
 
+		  		
+      }
+		
+	
       /*
       * Create a new gift card with data from ServicePOS
       */
@@ -76,7 +79,12 @@ class wcioWGCSSPservice extends wcioWGCSSP {
             global $wpdb;
             $table_prefix = $wpdb->prefix;
             $WooCommerceGiftCardTableName = "woocommerce_gc_cards";
+		  
+		// If its less than 5 minutes ago since last action, then allow this ro run again.
+		$wcio_wgcssp_last_action = get_option('wcio_wgcssp_last_action');
+		if($wcio_wgcssp_last_action > (time()-300)) { return; }
 
+		
             $giftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName ORDER BY ID DESC");
 
             // Get ServicePOS giftcards
@@ -85,7 +93,12 @@ class wcioWGCSSPservice extends wcioWGCSSP {
 
             // Loop all WooCommerce giftcards
             foreach ( $giftCards as $card ) {
+					
+					  
+		  // Update last action
+		  update_option( 'wcio_wgcssp_last_action', time() );
 
+				
                   $code = $card->code;
                   $sender = $card->sender;
                   $sender_email = $card->sender_email;
@@ -128,7 +141,7 @@ class wcioWGCSSPservice extends wcioWGCSSP {
                                                       
                                                 // Update giftcard in servicePOS
                                                 $updateServicePOSGiftcard = $this->call("PUT", "/giftcards/".$giftcard["id"]."", ['content' => $giftcardData]);
-						sleep(3); // Sleep to allow ServicePOS API to recover its limit.
+
                                                 continue;
 
                                           } else {
@@ -172,7 +185,6 @@ class wcioWGCSSPservice extends wcioWGCSSP {
                               ];
                   
                               $createServicePOSGiftcard = $this->call("POST", "/giftcards",  ['content' => $giftcard]);
-			      sleep(3); // Sleep to allow ServicePOS API to recover its limit. 
                               continue;
                   
                         
@@ -186,6 +198,11 @@ class wcioWGCSSPservice extends wcioWGCSSP {
       // Tjekker ServicePOS gift cards og opretter dem i WooCommerce Gift Cards hvis de ikke allerede findes. Hvis de findes i WooCommerce Gift Cards gør den ikke mere
       function wcio_wgcssp_cron_sync_service_pos_woo() {
 
+		// If its less than 5 minutes ago since last action, then allow this ro run again.
+		$wcio_wgcssp_last_action = get_option('wcio_wgcssp_last_action');
+		if($wcio_wgcssp_last_action > (time()-300)) { return; }
+		  
+		  
       // THis function should check service POS and do the sme as the Woo function did.
       global $wpdb;
       $table_prefix = $wpdb->prefix;
@@ -197,6 +214,9 @@ class wcioWGCSSPservice extends wcioWGCSSP {
       $giftcards = $this->call("GET", "/giftcards", $query);
 
       foreach ( $giftcards["content"] as $key => $card ) {
+		  
+		  // Update last action
+		  update_option( 'wcio_wgcssp_last_action', time() );
 
             $id = $card["id"]; //47021
             $giftcardno = $card["giftcardno"]; //724503989151
