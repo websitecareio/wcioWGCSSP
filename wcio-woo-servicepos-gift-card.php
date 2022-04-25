@@ -237,7 +237,7 @@ function add_cron_interval( $schedules ) {
       $log  = date("d-m-Y H:i:s").",".time().",$result,".json_encode($method).", ".json_encode($endpoint).", ".json_encode($data)."".PHP_EOL;
       //Save string to log, use FILE_APPEND to append.
       file_put_contents($logfile, $log, FILE_APPEND);
-	sleep(1); // Delay execution for 1 secon
+	sleep(2); // Delay execution for X seconds
         return json_decode($result, true);
     }
     
