@@ -88,7 +88,7 @@ class wcioWGCSSPservice extends wcioWGCSSP {
             $giftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName ORDER BY ID DESC");
 
             // Get ServicePOS giftcards
-            $query = array("paginationPageLength" => 1000);
+            $query = array("paginationPageLength" => 10000);
             $queryGiftcards = $this->call("GET", "/giftcards", $query);
 
             // Loop all WooCommerce giftcards
