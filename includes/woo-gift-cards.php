@@ -80,118 +80,139 @@ class wcioWGCSSPservice extends wcioWGCSSP {
             $table_prefix = $wpdb->prefix;
             $WooCommerceGiftCardTableName = "woocommerce_gc_cards";
 		  
-		// If its less than 5 minutes ago since last action, then allow this ro run again.
+		// If its less than 5 minutes ago since last action, then dont? allow this ro run again.
 		$wcio_wgcssp_last_action = get_option('wcio_wgcssp_last_action');
 		if($wcio_wgcssp_last_action > (time()-300)) { return; }
-
-		
-            $giftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName ORDER BY ID DESC");
-
+	
+            $wooGiftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName ORDER BY ID DESC");
+            
             // Get ServicePOS giftcards
-            $query = array("paginationPageLength" => 100000);
-            $queryGiftcards = $this->call("GET", "/giftcards", $query);
 
-            // Loop all WooCommerce giftcards
-            foreach ( $giftCards as $card ) {
-					
-					  
-		  // Update last action
-		  update_option( 'wcio_wgcssp_last_action', time() );
+            // Sets the amount of gift cards per page.
+            $paginationPageLength = 250; // 250 is new servicepos limit in future releases
 
-				
-                  $code = $card->code;
-                  $sender = $card->sender;
-                  $sender_email = $card->sender_email;
-                  $balance = $card->balance; // This is initial balance
-                  $remaining = $card->remaining; // This is remaining
-                  $expire_date = $card->expire_date; // This is remaining
-                  $redeem_date = $card->redeem_date; // This is remaining
-                  $spent = $balance-$remaining; // This is spent
+            // Get the count
+            $query = array("paginationPageLength" => 1, "paginationStart" => 0); // Start from page 1 (0)
+            $giftcards = $this->call("GET", "/giftcards", $query);
+           
+            // Get amount of giftcards from ServicePOS
+            $countGiftcards = $giftcards["count"];
 
-                        // Loop the giftcard data from before.
-                        $cardFound = 0;
-                        foreach($queryGiftcards["content"] AS $giftcard) {
+            // Now loop the calls until we have looped though all the giftcards
+            // $x is the pages.   
+            $queryGiftcards = array("content" => array(), "count" => $countGiftcards);
+            for($x = 0; $x <= ceil($countGiftcards/$paginationPageLength); $x++) {
 
-                              // First check if the giftcard is available in ServicePOS variable
-                              // We cannot break this loop until we auctually find it, because we have to check all cards
-                              if($this->codeToServicePos($code) == $giftcard["giftcardno"]) {
-
-                                    $cardFound = 1;
-                                    
-                                    // If gift card was found at ServicePOS.
-                                    // Match values to make sure this isnt an outdated card.
-                                    //$servicePOSAmount = $queryGiftcards["content"]["0"]["amount"]; // Overwridden to fix error.
-                                    $servicePOSAmountRemaining = $giftcard["amount"]-$giftcard["amountspent"]; // Full amount minus amount spent gives remaining
-
-                                          
-                                    
-                                          // The amounts wasnt the same, and they should be. Find the card with most spent and update the other.
-                                          // If the card in WooCommerce have been used more then the one in ServicePOS, then update ServicePOS
-                                          if($remaining < $giftcard["amount"]-$giftcard["amountspent"]) {
-
-                                                // If WooCommerce gift card ave more spent on it, then we need to update ServicePos
-                                                // Now updat the amount spent.
-                                                $servicePOSAmountSpent = $giftcard["amount"]-$remaining; // Full amount minus the remaining from wooCommerce gives the amount spent
-                                                $giftcardData = [
-                                                'amountspent' => (int)$servicePOSAmountSpent,
-                                                'type' => 'giftcard',
-                                                ];
-
-                                                if($remaining != $servicePOSAmountRemaining) {
-                                                      
-                                                // Update giftcard in servicePOS
-                                                $updateServicePOSGiftcard = $this->call("PUT", "/giftcards/".$giftcard["id"]."", ['content' => $giftcardData]);
-
-                                                continue;
-
-                                          } else {
-
-                                                // ServicePOs have most spent, then update WooCommerce
-                                                // CodeToWoo Not needed, this stems from Woo.
-                                                $remaining = $servicePOSAmountRemaining;
-                                                $updateWooGiftCard = $wpdb->query($wpdb->prepare("UPDATE $table_prefix$WooCommerceGiftCardTableName SET remaining='$remaining' WHERE code='$code'"));
-                                                continue;
-
-                                          }
-
-                                    }                               
-
-                              } 
-
-                        }     
-
-                        // IF card wasnt found in servicepos query
-                        if($cardFound == 0) {
-
-                              // Now check if its dead in WooCommerce ( AUtomatically remove if more than a year old.
-                              if($remaining == "0" && $expire_date<strtotime('-1 year') || $remaining == "0" && $redeem_date<strtotime('-1 year')) {
-
-                                    // The card is empty and expire or redeem date is more than a year old. Please remove it.
-                                    // CodeToWoo Not needed, this stems from Woo.
-                                    $updateWooGiftCard = $wpdb->query($wpdb->prepare("DELETE FROM $table_prefix$WooCommerceGiftCardTableName WHERE code='$code'"));
-                                    continue;
-
-                              }
-                              
-                              // It wasnt dead, now create it in ServicePOS since its not there
-                              $giftcard = [
-                              "giftcardno" => $this->codeToServicePos($code),
-                              "amount" => (int)$balance,
-                              "type" => "giftcard",
-                              "customer" => array(
-                                    "name" => $sender,
-                                    "email" => $sender_email,
-                              )
-                              ];
-                  
-                              $createServicePOSGiftcard = $this->call("POST", "/giftcards",  ['content' => $giftcard]);
-                              continue;
-                  
-                        
-                        }
-
+                  // We need to loop all pages
+                  // Now we do the query with the paging.
+                  $query = array("paginationPageLength" => $paginationPageLength, "paginationStart" => $paginationPageLength*$x); // Start from page 1 (0)
+                  $tmpContent = $this->call("GET", "/giftcards", $query);
+                  $queryGiftcards["content"][] = $tmpContent["content"];
 
             }
+
+
+            // Loop all WooCommerce giftcards
+                  foreach ( $wooGiftCards as $card ) {
+                                    
+                                    
+                  // Update last action
+                  update_option( 'wcio_wgcssp_last_action', time() );
+
+                              
+                        $code = $card->code;
+                        $sender = $card->sender;
+                        $sender_email = $card->sender_email;
+                        $balance = $card->balance; // This is initial balance
+                        $remaining = $card->remaining; // This is remaining
+                        $expire_date = $card->expire_date; // This is remaining
+                        $redeem_date = $card->redeem_date; // This is remaining
+                        $spent = $balance-$remaining; // This is spent
+
+                              // Loop the giftcard data from before.
+                              $cardFound = 0;
+                              foreach($queryGiftcards["content"]["0"] AS $giftcard) {
+
+                                    // First check if the giftcard is available in ServicePOS variable
+                                    // We cannot break this loop until we auctually find it, because we have to check all cards
+                                    if($this->codeToServicePos($code) == $giftcard["giftcardno"]) {
+
+                                          $cardFound = 1;
+                                          
+                                          // If gift card was found at ServicePOS.
+                                          // Match values to make sure this isnt an outdated card.
+                                          //$servicePOSAmount = $queryGiftcards["content"]["0"]["amount"]; // Overwridden to fix error.
+                                          $servicePOSAmountRemaining = $giftcard["amount"]-$giftcard["amountspent"]; // Full amount minus amount spent gives remaining
+
+                                                
+                                          
+                                                // The amounts wasnt the same, and they should be. Find the card with most spent and update the other.
+                                                // If the card in WooCommerce have been used more then the one in ServicePOS, then update ServicePOS
+                                                if($remaining < $giftcard["amount"]-$giftcard["amountspent"]) {
+
+                                                      // If WooCommerce gift card ave more spent on it, then we need to update ServicePos
+                                                      // Now updat the amount spent.
+                                                      $servicePOSAmountSpent = $giftcard["amount"]-$remaining; // Full amount minus the remaining from wooCommerce gives the amount spent
+                                                      $giftcardData = [
+                                                      'amountspent' => (int)$servicePOSAmountSpent,
+                                                      'type' => 'giftcard',
+                                                      ];
+
+                                                      if($remaining != $servicePOSAmountRemaining) {
+                                                            
+                                                      // Update giftcard in servicePOS
+                                                      $updateServicePOSGiftcard = $this->call("PUT", "/giftcards/".$giftcard["id"]."", ['content' => $giftcardData]);
+
+                                                      continue;
+
+                                                } else {
+
+                                                      // ServicePOs have most spent, then update WooCommerce
+                                                      // CodeToWoo Not needed, this stems from Woo.
+                                                      $remaining = $servicePOSAmountRemaining;
+                                                      $updateWooGiftCard = $wpdb->query($wpdb->prepare("UPDATE $table_prefix$WooCommerceGiftCardTableName SET remaining='$remaining' WHERE code='$code'"));
+                                                      continue;
+
+                                                }
+
+                                          }                               
+
+                                    } 
+
+                              }     
+
+                              // IF card wasnt found in servicepos query
+                              if($cardFound == 0) {
+
+                                    // Now check if its dead in WooCommerce ( AUtomatically remove if more than a year old.
+                                    if($remaining == "0" && $expire_date<strtotime('-1 year') || $remaining == "0" && $redeem_date<strtotime('-1 year')) {
+
+                                          // The card is empty and expire or redeem date is more than a year old. Please remove it.
+                                          // CodeToWoo Not needed, this stems from Woo.
+                                          $updateWooGiftCard = $wpdb->query($wpdb->prepare("DELETE FROM $table_prefix$WooCommerceGiftCardTableName WHERE code='$code'"));
+                                          continue;
+
+                                    }
+                                    
+                                    // It wasnt dead, now create it in ServicePOS since its not there
+                                    $giftcard = [
+                                    "giftcardno" => $this->codeToServicePos($code),
+                                    "amount" => (int)$balance,
+                                    "type" => "giftcard",
+                                    "customer" => array(
+                                          "name" => $sender,
+                                          "email" => $sender_email,
+                                    )
+                                    ];
+                        
+                                    $createServicePOSGiftcard = $this->call("POST", "/giftcards",  ['content' => $giftcard]);
+                                    continue;
+                        
+                              
+                              }
+
+
+                  }
 
       }
 
@@ -209,107 +230,126 @@ class wcioWGCSSPservice extends wcioWGCSSP {
       $WooCommerceGiftCardTableName = "woocommerce_gc_cards";
       
       // Sets the amount of gift cards per page.
-      $query = array("paginationPageLength" => 100000);
+      $paginationPageLength = 250; // 250 is new servicepos limit in future releases
 
+      // Get the count
+      $query = array("paginationPageLength" => 1, "paginationStart" => 0); // Start from page 1 (0)
       $giftcards = $this->call("GET", "/giftcards", $query);
 
-      foreach ( $giftcards["content"] as $key => $card ) {
-		  
-		  // Update last action
-		  update_option( 'wcio_wgcssp_last_action', time() );
+      // Get amount of giftcards from ServicePOS
+      $countGiftcards = $giftcards["count"];
+      
+      // Now loop the calls until we have looped though all the giftcards
+      // $x is the pages. 
+            for($x = 0; $x <= ceil($countGiftcards/$paginationPageLength); $x++) {
 
-            $id = $card["id"]; //47021
-            $giftcardno = $card["giftcardno"]; //724503989151
-            $code = $giftcardno; //724503989151
-            $amount = $card["amount"]; //49
-            $amountspent = $card["amountspent"]; //0
+                  // Now we do the query with the paging.
+                  $query = array("paginationPageLength" => $paginationPageLength, "paginationStart" => $paginationPageLength*$x); // Start from page 1 (0)
+                  $giftcards = $this->call("GET", "/giftcards", $query);
 
-            $amountremaining = $amount-$amountspent; //0
+                  foreach ( $giftcards["content"] as $key => $card ) {
+                        
+                        // Update last action
+                        update_option( 'wcio_wgcssp_last_action', time() );
 
-            $createddate = $card["createddate"]; //2021-11-22 22:03:39
-            $expirationdate = $card["expirationdate"]; //2023-11-22 22:03:39
-            $paymentid = $card["paymentid"]; //3534778
-            $type = $card["type"]; //giftcard
-            $vat = $card["vat"]; //25
-            $productid = $card["productid"]; //7987676
-            $productno = $card["productno"]; //giftcard
-            $expired = $card["expired"]; //
-            $store = array (
-                  "id" => $card["store"]["id"], //3241
-                  "title" => $card["store"]["title"], //websitecare
-                  "cityname" => $card["store"]["cityname"], //
-                  "phone" => $card["store"]["phone"], //42 44 46 89
-                  "zipcode" =>$card["store"]["zipcode"], //
-                  "streetname" =>$card["store"]["streetname"], //
-                  "streetno" =>$card["store"]["streetno"], //
-                  "email" => $card["store"]["email"], //support@websitecare.io
-                  "created" => $card["store"]["created"], //2021-11-22 14:23:55
-            );
+                        $id = $card["id"]; //47021
+                        $giftcardno = $card["giftcardno"]; //724503989151
+                        $code = $giftcardno; //724503989151
+                        $amount = $card["amount"]; //49
+                        $amountspent = $card["amountspent"]; //0
 
-                  $customer = $card["store"]["id"]; //
+                        $amountremaining = $amount-$amountspent; //0
 
-                  $codeToWoo = $this->codeToWoo($code);
-                  $wooGiftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName WHERE code='$codeToWoo' LIMIT 1");
+                        $createddate = $card["createddate"]; //2021-11-22 22:03:39
+                        $expirationdate = $card["expirationdate"]; //2023-11-22 22:03:39
+                        $paymentid = $card["paymentid"]; //3534778
+                        $type = $card["type"]; //giftcard
+                        $vat = $card["vat"]; //25
+                        $productid = $card["productid"]; //7987676
+                        $productno = $card["productno"]; //giftcard
+                        $expired = $card["expired"]; //
+                        $store = array (
+                              "id" => $card["store"]["id"], //3241
+                              "title" => $card["store"]["title"], //websitecare
+                              "cityname" => $card["store"]["cityname"], //
+                              "phone" => $card["store"]["phone"], //42 44 46 89
+                              "zipcode" =>$card["store"]["zipcode"], //
+                              "streetname" =>$card["store"]["streetname"], //
+                              "streetno" =>$card["store"]["streetno"], //
+                              "email" => $card["store"]["email"], //support@websitecare.io
+                              "created" => $card["store"]["created"], //2021-11-22 14:23:55
+                        );
 
-                  // If gift card was found at ServicePOS.
-                  if(count($wooGiftCards) == "1") {
+                        $customer = $card["store"]["id"]; //
 
-                        // Match values to make sure this isnt an outdated card.
-                        $wooRemaning = $wooGiftCards["0"]->remaining;
+                        $codeToWoo = $this->codeToWoo($code);
+                        $wooGiftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName WHERE code='$codeToWoo' LIMIT 1");
 
-                        if($wooRemaning != $amountremaining) {
+                        // If gift card was found at ServicePOS.
+                        if(count($wooGiftCards) == "1") {
 
-                              // The amounts wasnt the same, and they should be. Find the card with most spent and update the other.
-                              // If the card in WooCommerce have been used more then the one in ServicePOS, then update ServicePOS
-                              if($wooRemaning < $amountremaining) {
+                              // Match values to make sure this isnt an outdated card.
+                              $wooRemaning = $wooGiftCards["0"]->remaining;
 
-                                    // If WooCommerce gift card have more spent on it, then we need to update ServicePos
-                                    $query = $queryGiftcards;
+                              if($wooRemaning != $amountremaining) {
 
-                                    $giftcard = [
-                                    'amountspent' => $amount-$wooRemaning,
-                                    'type' => 'giftcard',
-                                    ];
+                                    // The amounts wasnt the same, and they should be. Find the card with most spent and update the other.
+                                    // If the card in WooCommerce have been used more then the one in ServicePOS, then update ServicePOS
+                                    if($wooRemaning < $amountremaining) {
 
-                                    // Update giftcard in servicePOS
-                                    $updateServicePOSGiftcard = $this->call("PUT", "/giftcards/".$id, ['content' => $giftcard]);
-                                    continue;
+                                          // If WooCommerce gift card have more spent on it, then we need to update ServicePos
+                                          $query = $queryGiftcards;
 
+                                          $giftcard = [
+                                          'amountspent' => $amount-$wooRemaning,
+                                          'type' => 'giftcard',
+                                          ];
+
+                                          // Update giftcard in servicePOS
+                                          $updateServicePOSGiftcard = $this->call("PUT", "/giftcards/".$id, ['content' => $giftcard]);
+                                          continue;
+
+
+                                    } else {
+
+                                          // ServicePOs have most spent, then update WooCommerce
+                                          // CodeToWoo Not needed, this stems from Woo.
+                                          $remaining = $amountremaining;
+                                          $updateWooGiftCard = $wpdb->query($wpdb->prepare("UPDATE $table_prefix$WooCommerceGiftCardTableName SET remaining=$remaining WHERE code='$codeToWoo'"));
+                                          continue;
+
+                                    }
 
                               } else {
 
-                                    // ServicePOs have most spent, then update WooCommerce
-                                    // CodeToWoo Not needed, this stems from Woo.
-                                    $remaining = $amountremaining;
-                                    $updateWooGiftCard = $wpdb->query($wpdb->prepare("UPDATE $table_prefix$WooCommerceGiftCardTableName SET remaining=$remaining WHERE code='$codeToWoo'"));
-                                    continue;
+                                    // Everything OK
 
                               }
 
-                        } else {
 
-                              // Everything OK
+                        } else if(count($wooGiftCards) == "0") {
+
+                              
+                              // Skip if its zero, we dont want empty cards in the system.
+                              if($amountremaining == 0) { continue; }
+
+                              // It wasnt found at WooCommerce.
+                              // The card wasnt found in WooCommerce, we need to create it.
+                              $time = time();
+
+                              $newWooGiftCardRemaning = $amountremaining;
+                              $newWooGiftCard = $wpdb->query($wpdb->prepare("INSERT INTO $table_prefix$WooCommerceGiftCardTableName (
+                              code, order_id, order_item_id, redeemed_by, recipient, sender, sender_email, message, balance, remaining,  template_id, create_date, deliver_date, delivered, expire_date, redeem_date, is_virtual,  is_active
+                              ) values (
+                              '$codeToWoo', '0', '0', '0',  '0', '',  '', '',  '$amount', '$newWooGiftCardRemaning', 'default', '$time', '0', '0', '0', '0', 'on',  'on'
+                              )"));
+                              continue;
 
                         }
 
-
-            }  else if(count($wooGiftCards) == "0") {
-
-                  // It wasnt found at WooCommerce.
-                  // The card wasnt found in WooCommerce, we need to create it.
-                  $time = time();
-
-                  $newWooGiftCardRemaning = $amountremaining;
-                  $newWooGiftCard = $wpdb->query($wpdb->prepare("INSERT INTO $table_prefix$WooCommerceGiftCardTableName (
-                  code, order_id, order_item_id, redeemed_by, recipient, sender, sender_email, message, balance, remaining,  template_id, create_date, deliver_date, delivered, expire_date, redeem_date, is_virtual,  is_active
-                  ) values (
-                  '$codeToWoo', '0', '0', '0',  '0', '',  '', '',  '$amount', '$newWooGiftCardRemaning', 'default', '$time', '0', '0', '0', '0', 'on',  'on'
-                  )"));
-                  continue;
+                  }
 
             }
-
-      }
 
       }
 

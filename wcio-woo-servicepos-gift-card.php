@@ -3,7 +3,7 @@
  * Plugin Name: Woo Gift Cards synchronize Servicepos.com
  * Plugin URI: https://websitecare.io/wordpress-plugins/woocommerce-servicepos-sync/
  * Description: Synchronize WooCommerce gift cards with ServicePOS 
- * Version: 1.1.8
+ * Version: 1.1.9
  * Author: Websitecare.io
  * Author URI: https://websitecare.io
  */
@@ -225,19 +225,20 @@ function add_cron_interval( $schedules ) {
             ";
         }
         curl_close($curl);
-		
+			
 	$logfile = dirname(__FILE__)."/../../uploads/wcio_wgcssp_service.txt";
 	// Check if we need to clean log
-      if(filesize($logfile) > "100000000") { // If above 100 mb
-     	 unlink($logfile);
-      }
-		
-		
+      if(file_exists($logfile)) {
+            if(filesize($logfile) > "100000000") { // If above 100 mb
+                  unlink($logfile);
+            }
+      }	
+	
 	// Log this call
       $log  = date("d-m-Y H:i:s").",".time().",$result,".json_encode($method).", ".json_encode($endpoint).", ".json_encode($data)."".PHP_EOL;
-      //Save string to log, use FILE_APPEND to append.
-      file_put_contents($logfile, $log, FILE_APPEND);
-	sleep(2); // Delay execution for X seconds
+      // Save string to log, use FILE_APPEND to append.
+      // file_put_contents($logfile, $log, FILE_APPEND);
+	sleep(1); // Delay execution for X seconds
         return json_decode($result, true);
     }
     
