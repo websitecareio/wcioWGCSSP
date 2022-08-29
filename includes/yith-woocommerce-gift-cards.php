@@ -86,7 +86,6 @@ class wcioWGCSSPservice extends wcioWGCSSP {
 
                                           $cardFound = 1;
                                           
-                                          die("here2");
                                           // If gift card was found at ServicePOS.
                                           // Match values to make sure this isnt an outdated card.
                                           //$servicePOSAmount = $queryGiftcards["content"]["0"]["amount"]; // Overwridden to fix error.
