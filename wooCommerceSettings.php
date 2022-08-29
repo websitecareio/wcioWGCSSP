@@ -76,6 +76,7 @@ class WC_wciowgcssp {
                 'type' => 'select',
                 'options' => array( 
                   'woo-gift-cards' => __('WooCommerce Gift Cards'),
+                  'yith-woocommerce-gift-cards' => __('YITH WooCommerce Gift Cards'),
                   'flexible-pdf-coupons' => __('Flexible PDF Coupons for WooCommerce'),
                   ),      
                 'desc' => __( '', 'woocommerce-settings-tab-demo' ),
