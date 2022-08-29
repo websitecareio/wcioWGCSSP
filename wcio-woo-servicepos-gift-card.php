@@ -3,7 +3,7 @@
  * Plugin Name: Woo Gift Cards synchronize Servicepos.com
  * Plugin URI: https://websitecare.io/wordpress-plugins/woocommerce-servicepos-sync/
  * Description: Synchronize WooCommerce gift cards with ServicePOS 
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: Websitecare.io
  * Author URI: https://websitecare.io
  */
@@ -45,7 +45,16 @@ class wcioWGCSSP {
                   include(dirname(__FILE__)."/includes/flexible-pdf-coupons.php");
    
             }
-                       
+                           
+            // If the site is using yith-woocommerce-gift-cards for WooCommerce plugin
+            if($this->giftcardplugin == "yith-woocommerce-gift-cards" ) {
+
+                  include(dirname(__FILE__)."/includes/yith-woocommerce-gift-cards.php");
+   
+            }
+               
+	    
+	    
             // Add cron sheduels
             add_filter( 'cron_schedules', array( $this, 'add_cron_interval') );
 
