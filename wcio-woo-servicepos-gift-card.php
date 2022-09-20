@@ -15,7 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 include("wooCommerceSettings.php");
 
-register_activation_hook( __FILE__, array('wcioWGCSSP', 'activatePlugin') );
 
 /* Main plugin functions */
 class wcioWGCSSP {
@@ -77,7 +76,9 @@ class wcioWGCSSP {
 			// Add options
 		  	add_action('admin_init', array($this, 'custom_plugin_register_settings'));
 			add_action('admin_menu', array($this, 'custom_plugin_setting_page'));
-
+		
+	    
+		register_activation_hook( __FILE__, array($this, 'activatePlugin') );
 
     }
 
