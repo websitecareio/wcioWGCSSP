@@ -3,7 +3,7 @@
  * Plugin Name: Woo Gift Cards synchronize Servicepos.com
  * Plugin URI: https://websitecare.io/wordpress-plugins/woocommerce-servicepos-sync/
  * Description: Synchronize WooCommerce gift cards with ServicePOS 
- * Version: 1.2.1
+ * Version: 1.2.2
  * Author: Websitecare.io
  * Author URI: https://websitecare.io
  */
