@@ -322,7 +322,7 @@ class wcioWGCSSPservice extends wcioWGCSSP {
             // Output XXXX-XXXX-XXXX-XXXX
             $number = str_pad($code, 16, "X", STR_PAD_RIGHT);
             $str = chunk_split($number, 4, '-');
-            $str = substr($str, 0, -1);;
+            $str = substr($str, 0, -1);
             return $str;
 
       }
