@@ -135,7 +135,7 @@ class wcioWGCSSPservice extends wcioWGCSSP {
 
                                     // First check if the giftcard is available in ServicePOS variable
                                     // We cannot break this loop until we auctually find it, because we have to check all cards
-                                    if($this->codeToServicePos($code) == $giftcard["giftcardno"]) {
+                                    if($this->codeToServicePos($code) == $giftcard["giftcardno"] && $giftcard["giftcardno"] != "") {
 
                                           $cardFound = 1;
                                           
@@ -286,7 +286,8 @@ class wcioWGCSSPservice extends wcioWGCSSP {
                         $wooGiftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName WHERE code='$codeToWoo' LIMIT 1");
 
                         // If gift card was found at ServicePOS.
-                        if(count($wooGiftCards) == "1") {
+                        $wooGiftCardNumber = $wooGiftCards["code"];
+                        if(count($wooGiftCards) == "1" && $wooGiftCardNumber == $codeToWoo && $code != "") {
 
                               // Match values to make sure this isnt an outdated card.
                               $wooRemaning = $wooGiftCards["0"]->remaining;

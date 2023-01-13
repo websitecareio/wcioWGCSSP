@@ -82,7 +82,7 @@ class wcioWGCSSPservice extends wcioWGCSSP {
 
                                     // First check if the giftcard is available in ServicePOS variable
                                     // We cannot break this loop until we auctually find it, because we have to check all cards
-                                    if($this->codeToServicePos($code) == $giftcard["giftcardno"]) {
+                                    if($this->codeToServicePos($code) == $giftcard["giftcardno"] && $giftcard["giftcardno"] != "") {
 
                                           $cardFound = 1;
                                           
@@ -184,6 +184,7 @@ class wcioWGCSSPservice extends wcioWGCSSP {
                   $query = array("paginationPageLength" => $paginationPageLength, "paginationStart" => $paginationPageLength*$x); // Start from page 1 (0)
                   $giftcards = $this->call("GET", "/giftcards", $query);
 
+                  // Loops all servicepos giftcard
                   foreach ( $giftcards["content"] as $key => $card ) {
                         
                         // Update last action
@@ -219,12 +220,14 @@ class wcioWGCSSPservice extends wcioWGCSSP {
 
                         $customer = $card["store"]["id"]; //
 
+                        // Make woo data format of giftcard and search for the giftcard
                         $codeToWoo = $this->codeToWoo($code);
                         $wooGiftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName WHERE post_type = 'gift_card' AND post_title = '$codeToWoo' LIMIT 1");
                                                 
 
-                        // If gift card was found in WooCommerce.
-                        if(count($wooGiftCards) == "1") {
+                        // If gift card was found in WooCommerce and we verified it was the same card
+                        $wooGiftCardNumber =  $wooGiftCards["post_title"];
+                        if(count($wooGiftCards) == "1" && $wooGiftCardNumber == $codeToWoo && $code != "") {
 
                               $balance = (int)get_post_meta( $wooGiftCards["0"]->ID, "_ywgc_amount_total", true ) ?? 0;  // This is initial balance
                               $remaining = (int)get_post_meta( $wooGiftCards["0"]->ID, "_ywgc_balance_total", true ) ?? 0; // This is remaining
