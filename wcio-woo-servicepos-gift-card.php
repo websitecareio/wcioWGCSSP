@@ -45,7 +45,10 @@ class wcioWGCSSP
             __FILE__,
             $slug // Product slug
         );
-
+	    
+        //Set the branch that contains the stable release.
+        $myUpdateChecker->setBranch('main');
+	    
         // Add options
         add_action('admin_init', array($this, 'custom_plugin_register_settings'));
         add_action('admin_menu', array($this, 'custom_plugin_setting_page'));
