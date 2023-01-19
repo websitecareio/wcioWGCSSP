@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Woo Gift Cards synchronize Servicepos.com
- * Plugin URI: https://websitecare.io/wordpress-plugins/woocommerce-servicepos-sync/
- * Description: Synchronize WooCommerce gift cards with ServicePOS 
+ * Plugin Name: Woo Gift Cards synchronize Customers 1st. (Formerly known as ServicePOS)
+ * Plugin URI: https://websitecare.io/
+ * Description: Synchronize WooCommerce gift cards with Customers 1st. (Formerly known as ServicePOS)
  * Version: 1.2.7
  * Author: Websitecare.io
  * Author URI: https://websitecare.io
@@ -41,7 +41,7 @@ class wcioWGCSSP
         $updateToken = get_option('wcio-dm-api-key');
         require dirname(__FILE__) . "/plugin-update-checker/plugin-update-checker.php";
         $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-            'https://websitecare.io/wp-json/wcio/product/' . $slug . '/update/?token=' . $updateToken . '',
+            'https://github.com/websitecareio/wcio-woo-servicepos-gift-card',
             __FILE__,
             $slug // Product slug
         );
@@ -50,6 +50,8 @@ class wcioWGCSSP
         add_action('admin_init', array($this, 'custom_plugin_register_settings'));
         add_action('admin_menu', array($this, 'custom_plugin_setting_page'));
 
+        // Add menu 
+        add_action('admin_menu',  array($this, 'my_custom_menu'));
 
         register_activation_hook(__FILE__, array($this, 'activatePlugin'));
     }
@@ -90,15 +92,6 @@ class wcioWGCSSP
                             <p>Last action is when the plugin last had an action and will make sure the plugin doesnt spin in a loop.<br>This field value should look something like this <?php echo time(); ?>.<br>Do not empty this field unless its for testing.
                             </p>
                             <input type='text' class="regular-text" id="wcio_wgcssp_last_action_id" name="wcio_wgcssp_last_action" value="<?php echo get_option('wcio_wgcssp_last_action'); ?>">
-                        </td>
-                    </tr>
-
-
-                    <tr>
-                        <th><label for="first_field_id">Last logged actions:</label></th>
-
-                        <td>
-                            <p>Click here to view the log file: <a href="/wp-content/uploads/wcio_wgcssp_service.txt" target="_blank">Log file</a></p>
                         </td>
                     </tr>
 
@@ -167,8 +160,78 @@ class wcioWGCSSP
         }
     }
 
+    // menu for logs 
+    function my_custom_menu() {
+        add_submenu_page(
+            'options-general.php', //parent slug
+            'ServicePOS log', //page title
+            'ServicePOS log', //menu title
+            'manage_options', //capability
+            'my-table', //menu slug
+            array($this, 'my_table_content')  //callback function
+        );
+    }
+  
+    
+    function my_table_content() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . "wcioWGCSSP_log";
+        $results = $wpdb->get_results("SELECT * FROM $table_name ORDER BY ID DESC LIMIT 100");
+        echo '<div class="wrap"><table class="wp-list-table widefat fixed">';
+        echo '<thead><tr><th width="10%">ID</th><th width="20%">Time</th><th>Logdata</th><th width="20%">Giftcard</th></tr></thead>';
+        echo '<tbody>';
+        foreach ($results as $row) {
+            echo '<tr>';
+            echo '<td>' . $row->id . '</td>';
+            echo '<td>' . $row->time . '</td>';
+            echo '<td>' . $row->logdata . '</td>';
+            echo '<td>' . $row->giftcard . '</td>';
+            echo '</tr>';
+        }
+        echo '</tbody></table></div>';
+    }
+    
+    // Log call
+    function logging($logdata, $giftcard = "") {
 
+        global $wpdb;
+        $table_name = $wpdb->prefix . "wcioWGCSSP_log";
+        $table_check = $wpdb->get_var("SHOW TABLES LIKE '$table_name'");
+        
+        // Check if table exists
+        if ($table_check != $table_name) {
+            //table does not exist, create it
+            $charset_collate = $wpdb->get_charset_collate();
+            $sql = "CREATE TABLE $table_name (
+                id mediumint(9) NOT NULL AUTO_INCREMENT,
+                time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+                logdata text NOT NULL,
+                giftcard varchar(100) DEFAULT '' NOT NULL,
+                PRIMARY KEY  (id)
+            ) $charset_collate;";
+            require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+            dbDelta( $sql );
+        }
 
+        // Save a log file.
+        $data = array(
+            'time' => date('Y-m-d H:i:s', time()),
+            'logdata' => $logdata, 
+            'giftcard' => $giftcard,
+        );
+        $wpdb->insert($table_name, $data);
+
+        if($wpdb->insert_id) {
+            //Insertion was successful
+            //die("YES");
+        } else {
+            //Insertion failed
+            //die("NO");
+        }
+        
+        
+
+    }
 
     // Call ServicePOS
     function call($method, $endpoint, $data = false)
@@ -206,6 +269,13 @@ class wcioWGCSSP
         $result = curl_exec($curl);
         $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         if ($status >= 300) {
+            $this->logging("STATUS ERROR SERVICEPOS: <br>
+            'endpoint' => $url<br>
+            'status' => $status<br>
+            'error' => ''<br>
+            'method' => $method<br>
+            'result' => $result<br>
+            'token' => " . $this->token . "<br>", "");
             return "
                 'endpoint' => $url<br>
                 'status' => $status<br>
@@ -217,20 +287,37 @@ class wcioWGCSSP
         }
         curl_close($curl);
 
-        $logfile = dirname(__FILE__) . "/../../uploads/wcio_wgcssp_service.txt";
-        // Check if we need to clean log
-        if (file_exists($logfile)) {
-            if (filesize($logfile) > "100000000") { // If above 100 mb
-                unlink($logfile);
-            }
-        }
-
         // Log this call
-        $log  = date("d-m-Y H:i:s") . "," . time() . ",$result," . json_encode($method) . ", " . json_encode($endpoint) . ", " . json_encode($data) . "" . PHP_EOL;
+      /*  $log  = date("d-m-Y H:i:s") . "," . time() . ",$result," . json_encode($method) . ", " . json_encode($endpoint) . ", " . json_encode($data) . "" . PHP_EOL;
         // Save string to log, use FILE_APPEND to append.
-        // file_put_contents($logfile, $log, FILE_APPEND);
+        $logdata = "<strong>ServicePOS call:</strong><br>
+        <strong>Result:</strong> $result<br>
+        <strong>Method:</strong> " . json_encode($method) . "<br>
+        <strong>Data (postfields):</strong> ".json_encode($data)."<br>
+        <strong>Endpoint:</strong> " . json_encode($endpoint) ."";
+        $giftcard = "";
+        //$this->logging($logdata, $giftcard);
+        */
         sleep(1); // Delay execution for X seconds
         return json_decode($result, true);
+    }
+
+    
+    function search($array, $key, $value)
+    {
+          $results = array();
+
+          if (is_array($array)) {
+                if (isset($array[$key]) && $array[$key] == $value) {
+                      $results[] = $array;
+                }
+
+                foreach ($array as $subarray) {
+                      $results = array_merge($results, $this->search($subarray, $key, $value));
+                }
+          }
+
+          return $results;
     }
 }
 
@@ -246,13 +333,6 @@ if ($giftcardPlugin == "woo-gift-cards" || $giftcardPlugin == "") {
 
 }
 
-// If the site is using Flexible PDF Coupons Pro for WooCommerce plugin
-if ($giftcardPlugin == "flexible-pdf-coupons") {
-
-    include(dirname(__FILE__) . "/includes/flexible-pdf-coupons.php");
-
-}
-
 // If the site is using yith-woocommerce-gift-cards for WooCommerce plugin
 if ($giftcardPlugin == "yith-woocommerce-gift-cards") {
 
@@ -261,4 +341,6 @@ if ($giftcardPlugin == "yith-woocommerce-gift-cards") {
 }
 
 $service = new wcioWGCSSPservice();
+//if(!is_admin() ) {
 //echo $service->wcio_wgcssp_cron_sync_woo_service_pos();
+//}
