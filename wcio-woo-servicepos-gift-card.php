@@ -3,11 +3,11 @@
  * Plugin Name: Woo Gift Cards synchronize Customers 1st. (Formerly known as ServicePOS)
  * Plugin URI: https://websitecare.io/
  * Description: Synchronize WooCommerce gift cards with Customers 1st. (Formerly known as ServicePOS)
- * Version: 1.2.7
+ * Version: 1.2.8
  * Author: Websitecare.io
  * Author URI: https://websitecare.io
  */
-
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 // Exit if accessed directly.
 if (!defined('ABSPATH')) {
     exit;
@@ -37,18 +37,17 @@ class wcioWGCSSP
         add_action('admin_init', array($this, 'myplugin_register_settings'));
         add_action('admin_menu', array($this, 'myplugin_register_options_page'));
 
-        $slug = "wcio-woo-servicepos-gift-card";
-        $updateToken = get_option('wcio-dm-api-key');
         require dirname(__FILE__) . "/plugin-update-checker/plugin-update-checker.php";
-        $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+
+        $myUpdateChecker = PucFactory::buildUpdateChecker(
             'https://github.com/websitecareio/wcio-woo-servicepos-gift-card/',
             __FILE__,
-            $slug // Product slug
+            'wcio-woo-servicepos-gift-card'
         );
-	    
+
         //Set the branch that contains the stable release.
         $myUpdateChecker->setBranch('main');
-	    
+
         // Add options
         add_action('admin_init', array($this, 'custom_plugin_register_settings'));
         add_action('admin_menu', array($this, 'custom_plugin_setting_page'));
