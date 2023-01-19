@@ -41,7 +41,7 @@ class wcioWGCSSP
         $updateToken = get_option('wcio-dm-api-key');
         require dirname(__FILE__) . "/plugin-update-checker/plugin-update-checker.php";
         $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-            'https://github.com/websitecareio/wcio-woo-servicepos-gift-card',
+            'https://github.com/websitecareio/wcio-woo-servicepos-gift-card/',
             __FILE__,
             $slug // Product slug
         );
