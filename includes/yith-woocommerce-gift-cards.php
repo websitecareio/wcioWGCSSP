@@ -106,8 +106,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                                     // Now updat the amount spent.
                                     $servicePOSAmountSpent = $giftcard["amount"] - $remaining; // Full amount minus the remaining from wooCommerce gives the amount spent
                                     $giftcardData = [
-                                          'amountspent' => (int)$servicePOSAmountSpent,
-                                          'type' => 'giftcard',
+                                          'amountspent' => (int)$servicePOSAmountSpent
                                     ];
 
                                     if ($remaining != $servicePOSAmountRemaining) {
@@ -262,8 +261,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                                           // If WooCommerce gift card have more spent on it, then we need to update Customers 1st.
                                           $newAmount = $amount - $wooRemaning;
                                           $giftcard = [
-                                                'amountspent' => $newAmount,
-                                                'type' => 'giftcard',
+                                                'amountspent' => $newAmount
                                           ];
 
                                           // Update giftcard in Customers 1st.
