@@ -48,7 +48,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
             $paginationPageLength = 249; // 250 is new Customers 1st. limit in future releases
 
             // Get the count
-            $query = array("paginationPageLength" => 1, "paginationStart" => 0); // Start from page 1 (0)
+            $query = array("paginationPageLength" => 1, "paginationStart" => 0, "scope" => "sharegiftcards"); // Start from page 1 (0)
             $giftcards = $this->call("GET", "/giftcards", $query);
             // Get amount of giftcards from Customers 1st.
             $countGiftcards = $giftcards["count"];
@@ -62,7 +62,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   // We need to loop all pages
                   // Now we do the query with the paging.
                   $paginationStart = $paginationPageLength * $x;
-                  $query = array("paginationPageLength" => $paginationPageLength, "paginationStart" => $paginationStart); // Start from page 1 (0)
+                  $query = array("paginationPageLength" => $paginationPageLength, "paginationStart" => $paginationStart, "scope" => "sharegiftcards"); // Start from page 1 (0)
                   $queryGiftcards = $this->call("GET", "/giftcards", $query);
 
                   // Log the data. We cannot use $giftcards in the log data. For some reason it cannot save it.. DB character limit possible. Using MEDIUMTEXT or LONGTEXT might fix it.
@@ -201,7 +201,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
             $paginationPageLength = 249; // 250 is new Customers 1st. limit in future releases. Settings 1 below.
 
             // Get the count
-            $query = array("paginationPageLength" => 1, "paginationStart" => 0); // Start from page 1 (0)
+            $query = array("paginationPageLength" => 1, "paginationStart" => 0, "scope" => "sharegiftcards"); // Start from page 1 (0)
             $giftcards = $this->call("GET", "/giftcards", $query);
             // Get amount of giftcards from ServicePOS
             $countGiftcards = $giftcards["count"];
@@ -216,7 +216,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   // Now we do the query with the paging.
                   $paginationStart = $paginationPageLength * $x;
 
-                  $query = array("paginationPageLength" => $paginationPageLength, "paginationStart" => $paginationStart); // Start from page 1 (0)
+                  $query = array("paginationPageLength" => $paginationPageLength, "paginationStart" => $paginationStart, "scope" => "sharegiftcards"); // Start from page 1 (0)
                   $giftcards = $this->call("GET", "/giftcards", $query);
 
                   // Log the data. We cannot use $giftcards in the log data. For some reason it cannot save it.. DB character limit possible. Using MEDIUMTEXT or LONGTEXT might fix it.
