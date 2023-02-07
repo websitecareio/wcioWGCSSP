@@ -3,7 +3,7 @@
  * Plugin Name: Woo Gift Cards synchronize Customers 1st. (Formerly known as ServicePOS)
  * Plugin URI: https://websitecare.io/
  * Description: Synchronize WooCommerce gift cards with Customers 1st. (Formerly known as ServicePOS)
- * Version: 1.3.0
+ * Version: 1.3.1
  * Author: Websitecare.io
  * Author URI: https://websitecare.io
  */
@@ -93,7 +93,8 @@ class wcioWGCSSP
                         <td>
                             <p>Last action is when the plugin last had an action and will make sure the plugin doesnt spin in a loop.<br>This field value should look something like this <?php echo time(); ?>.<br>Do not empty this field unless its for testing.
                             </p>
-                            <input type='text' class="regular-text" id="wcio_wgcssp_last_action_id" name="wcio_wgcssp_last_action" value="<?php echo get_option('wcio_wgcssp_last_action'); ?>">
+                            <input type='text' class="regular-text" id="wcio_wgcssp_last_action_id" name="wcio_wgcssp_last_action" value="<?php echo get_option('wcio_wgcssp_last_action'); ?>"><br>
+			    <input type='text' class="regular-text" id="wcio_wgcssp_last_action_id_2" name="wcio_wgcssp_last_action_2" value="<?php echo get_option('wcio_wgcssp_last_action_2'); ?>">
                         </td>
                     </tr>
 
