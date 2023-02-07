@@ -184,8 +184,8 @@ class wcioWGCSSPservice extends wcioWGCSSP
             // Start run
             $this->logging("Started <strong>wcio_wgcssp_cron_sync_service_pos_woo</strong> function.", "");
             // If its less than 5 minutes ago since last action, then dont? allow this ro run again.
-            $wcio_wgcssp_last_action = get_option('wcio_wgcssp_last_action');
-            if ($wcio_wgcssp_last_action > (time() - 300)) {
+            $wcio_wgcssp_last_action_2 = get_option('wcio_wgcssp_last_action_2');
+            if ($wcio_wgcssp_last_action_2 > (time() - 300)) {
                   $this->logging("Stopped run because it is less than 5 minutes ago since last run.", "");
                   return;
             }
@@ -226,7 +226,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
 
 
                         // Update last action
-                        update_option('wcio_wgcssp_last_action', time());
+                        update_option('wcio_wgcssp_last_action_2', time());
 
                         $id = $card["id"]; //47021
                         $giftcardno = $card["giftcardno"]; //724503989151
