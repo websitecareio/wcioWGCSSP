@@ -154,7 +154,7 @@ class wcioWGCSSPservice extends wcioWGCSSP {
                                                       // Now updat the amount spent.
                                                       $servicePOSAmountSpent = $giftcard["amount"]-$remaining; // Full amount minus the remaining from wooCommerce gives the amount spent
                                                       $giftcardData = [
-                                                      'amountspent' => (int)$servicePOSAmountSpent,
+                                                      'amountspent' => $servicePOSAmountSpent,
                                                       'type' => 'giftcard',
                                                       ];
 
@@ -197,7 +197,7 @@ class wcioWGCSSPservice extends wcioWGCSSP {
                                     // It wasnt dead, now create it in ServicePOS since its not there
                                     $giftcard = [
                                     "giftcardno" => $this->codeToServicePos($code),
-                                    "amount" => (int)$balance,
+                                    "amount" => $balance,
                                     "type" => "giftcard",
                                     "customer" => array(
                                           "name" => $sender,
