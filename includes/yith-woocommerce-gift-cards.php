@@ -79,8 +79,8 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   update_option('wcio_wgcssp_last_action', time());
 
                   $code = $card->post_title; // YITH
-                  $balance = (int)get_post_meta($card->ID, "_ywgc_amount_total", true);  // This is initial balance
-                  $remaining = (int)get_post_meta($card->ID, "_ywgc_balance_total", true); // This is remaining
+                  $balance = get_post_meta($card->ID, "_ywgc_amount_total", true);  // This is initial balance
+                  $remaining = get_post_meta($card->ID, "_ywgc_balance_total", true); // This is remaining
 
                   $searchGiftCardRaw = $this->search($servicePOSGiftcards, 'giftcardno', $this->codeToServicePos($code));
                   $searchGiftCardCount = count($searchGiftCardRaw);
@@ -106,7 +106,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                                     // Now updat the amount spent.
                                     $servicePOSAmountSpent = $giftcard["amount"] - $remaining; // Full amount minus the remaining from wooCommerce gives the amount spent
                                     $giftcardData = [
-                                          'amountspent' => (int)$servicePOSAmountSpent
+                                          'amountspent' => $servicePOSAmountSpent
                                     ];
 
                                     if ($remaining != $servicePOSAmountRemaining) {
@@ -157,7 +157,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
 
                         $giftcard = [
                               "giftcardno" => $this->codeToServicePos($code),
-                              "amount" => (int)$giftcardAmount,
+                              "amount" => $giftcardAmount,
                               "type" => "giftcard",
                               "customer" => array(
                                     "name" => "",
@@ -244,8 +244,8 @@ class wcioWGCSSPservice extends wcioWGCSSP
                         $wooGiftCardNumber = $wooGiftCards["0"]->post_title;
                         if (count($wooGiftCards) == "1" && $wooGiftCardNumber == $codeToWoo && $code != "") {
 
-                              $balance = (int)get_post_meta($wooGiftCards["0"]->ID, "_ywgc_amount_total", true) ?? 0;  // This is initial balance
-                              $remaining = (int)get_post_meta($wooGiftCards["0"]->ID, "_ywgc_balance_total", true) ?? 0; // This is remaining
+                              $balance = get_post_meta($wooGiftCards["0"]->ID, "_ywgc_amount_total", true) ?? 0;  // This is initial balance
+                              $remaining = get_post_meta($wooGiftCards["0"]->ID, "_ywgc_balance_total", true) ?? 0; // This is remaining
 
                               $spent = $balance - $remaining; // This is spent
 
