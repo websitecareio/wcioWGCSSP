@@ -79,8 +79,8 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   update_option('wcio_wgcssp_last_action', time());
 
                   $code = $card->post_title; // YITH
-                  $balance = get_post_meta($card->ID, "_ywgc_amount_total", true);  // This is initial balance
-                  $remaining = get_post_meta($card->ID, "_ywgc_balance_total", true); // This is remaining
+                  $balance = number_format(get_post_meta($card->ID, "_ywgc_amount_total", true), 2, '.', '');  // This is initial balance
+                  $remaining = number_format(get_post_meta($card->ID, "_ywgc_balance_total", true), 2, '.', ''); // This is remaining
 
                   $searchGiftCardRaw = $this->search($servicePOSGiftcards, 'giftcardno', $this->codeToServicePos($code));
                   $searchGiftCardCount = count($searchGiftCardRaw);
@@ -96,7 +96,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                               // If gift card was found at ServicePOS.
                               // Match values to make sure this isnt an outdated card.
                               //$servicePOSAmount = $queryGiftcards["content"]["0"]["amount"]; // Overwridden to fix error.
-                              $servicePOSAmountRemaining = $giftcard["amount"] - $giftcard["amountspent"]; // Full amount minus amount spent gives remaining
+                              $servicePOSAmountRemaining = number_format($giftcard["amount"], 2, '.', '') - number_format($giftcard["amountspent"], 2, '.', ''); // Full amount minus amount spent gives remaining
 
                               // The amounts wasnt the same, and they should be. Find the card with most spent and update the other.
                               // If the card in WooCommerce have been used more then the one in Customers 1st., then update Customers 1st.
@@ -104,7 +104,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
 
                                     // If WooCommerce gift card ave more spent on it, then we need to update Customers 1st.
                                     // Now updat the amount spent.
-                                    $servicePOSAmountSpent = $giftcard["amount"] - $remaining; // Full amount minus the remaining from wooCommerce gives the amount spent
+                                    $servicePOSAmountSpent = number_format($giftcard["amount"], 2, '.', '') - $remaining; // Full amount minus the remaining from wooCommerce gives the amount spent
                                     $giftcardData = [
                                           'amountspent' => $servicePOSAmountSpent
                                     ];
@@ -231,8 +231,8 @@ class wcioWGCSSPservice extends wcioWGCSSP
                         $id = $card["id"]; //47021
                         $giftcardno = $card["giftcardno"]; //724503989151
                         $code = $giftcardno; //724503989151
-                        $amount = $card["amount"]; //49
-                        $amountspent = $card["amountspent"]; //0
+                        $amount = number_format($card["amount"], 2, '.', ''); //49
+                        $amountspent = number_format($card["amountspent"], 2, '.', ''); //0
 
                         $amountremaining = $amount - $amountspent; //0
 
@@ -244,8 +244,8 @@ class wcioWGCSSPservice extends wcioWGCSSP
                         $wooGiftCardNumber = $wooGiftCards["0"]->post_title;
                         if (count($wooGiftCards) == "1" && $wooGiftCardNumber == $codeToWoo && $code != "") {
 
-                              $balance = get_post_meta($wooGiftCards["0"]->ID, "_ywgc_amount_total", true) ?? 0;  // This is initial balance
-                              $remaining = get_post_meta($wooGiftCards["0"]->ID, "_ywgc_balance_total", true) ?? 0; // This is remaining
+                              $balance = number_format(get_post_meta($wooGiftCards["0"]->ID, "_ywgc_amount_total", true), 2, '.', '') ?? 0;  // This is initial balance
+                              $remaining = number_format(get_post_meta($wooGiftCards["0"]->ID, "_ywgc_balance_total", true), 2, '.', '') ?? 0; // This is remaining
 
                               $spent = $balance - $remaining; // This is spent
 
