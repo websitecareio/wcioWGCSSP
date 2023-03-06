@@ -19,8 +19,22 @@ class wcioWGCSSPservice extends wcioWGCSSP
             // Run this code if the gift card plugin is Woo Gift Card
             add_action('wcio_wgcssp_cron_sync_woo_service_pos', array($this, 'wcio_wgcssp_cron_sync_woo_service_pos'));
             add_action('wcio_wgcssp_cron_sync_service_pos_woo', array($this, 'wcio_wgcssp_cron_sync_service_pos_woo'));
+            add_action( 'admin_init',  array($this, 'ywgc_code_pattern'));
+            
       }
+      
+      function ywgc_code_pattern() {
+            
+            $word = "-";
 
+            // Test if string contains the word 
+            if(strpos(get_option("ywgc_code_pattern"), $word) !== false){
+                
+                  update_option( 'ywgc_code_pattern', '************' ); 
+                  
+            } 
+            
+      }
 
       //  Tjekker WooCommerce Gift Cards og opretter dem i Customers 1st. hvis de ikke allerede findes. Hvis de findes i Customers 1st. gør den ikke mere.
       function wcio_wgcssp_cron_sync_woo_service_pos()
@@ -371,3 +385,4 @@ class wcioWGCSSPservice extends wcioWGCSSP
 
       }
 }
+
