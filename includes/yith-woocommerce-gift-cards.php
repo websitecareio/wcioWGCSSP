@@ -328,7 +328,9 @@ class wcioWGCSSPservice extends wcioWGCSSP
       // Skal bruges for alle kort der stammer fra Woo og som skal til Customers 1st.
       function codeToServicePos($code)
       {
-
+            
+            return $code; // Do nothing with the code, just send it raw.
+            
             // Input XXXX-XXXX-XXXX-XXXX
             // Output: 724503989151  (12 char)()
             $code = str_replace("XXXX", "", $code); // removes X s that have been added to match format.
@@ -340,6 +342,8 @@ class wcioWGCSSPservice extends wcioWGCSSP
       // Skal bruges for alle kort der stammer fra Customers 1st. og som skal til Woo
       function codeToWoo($code)
       {
+            
+            return $code; // Do nothing with the code, just send it raw.
 
             // Input: 724503989151  (12 char)
             // Output XXXX-XXXX-XXXX-XXXX
