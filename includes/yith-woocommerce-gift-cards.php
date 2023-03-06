@@ -329,27 +329,45 @@ class wcioWGCSSPservice extends wcioWGCSSP
       function codeToServicePos($code)
       {
             
-            return $code; // Do nothing with the code, just send it raw.
+            $word = "-";
+
+            // Test if string contains the word 
+            if(strpos($code, $word) !== false){
+                  
+                  // Input XXXX-XXXX-XXXX-XXXX
+                  // Output: 724503989151  (12 char)()
+                  $code = str_replace("XXXX", "", $code); // removes X s that have been added to match format.
+                  $code = str_replace("-", "", $code); // Removes - s that have been added to match format.
+                  return $code; // outputs a Customers 1st. gift card.
+                  
+            } else{
+                    return $code; // Do nothing with the code, just send it raw.
+            }
             
-            // Input XXXX-XXXX-XXXX-XXXX
-            // Output: 724503989151  (12 char)()
-            $code = str_replace("XXXX", "", $code); // removes X s that have been added to match format.
-            $code = str_replace("-", "", $code); // Removes - s that have been added to match format.
-            return $code; // outputs a Customers 1st. gift card.
+       
+        
 
       }
 
       // Skal bruges for alle kort der stammer fra Customers 1st. og som skal til Woo
       function codeToWoo($code)
       {
-            
-            return $code; // Do nothing with the code, just send it raw.
+            $word = "-";
 
-            // Input: 724503989151  (12 char)
-            // Output XXXX-XXXX-XXXX-XXXX
-            $number = str_pad($code, 16, "X", STR_PAD_RIGHT);
-            $str = chunk_split($number, 4, '-');
-            $str = substr($str, 0, -1);
-            return $str;
+            // Test if string contains the word 
+            if(strpos($code, $word) !== false){
+                
+                  // Input: 724503989151  (12 char)
+                  // Output XXXX-XXXX-XXXX-XXXX
+                  $number = str_pad($code, 16, "X", STR_PAD_RIGHT);
+                  $str = chunk_split($number, 4, '-');
+                  $str = substr($str, 0, -1);
+                  return $str;
+                  
+            } else{
+                    return $code; // Do nothing with the code, just send it raw.
+            }
+            
+
       }
 }
