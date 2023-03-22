@@ -355,7 +355,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   return $code; // outputs a Customers 1st. gift card.
                   
             } else{
-                    return $code; // Do nothing with the code, just send it raw.
+                    return str_replace("XXXX", "", $code); // Do nothing with the code, just send it raw.
             }
             
        
