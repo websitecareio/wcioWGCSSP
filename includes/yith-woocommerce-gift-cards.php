@@ -102,7 +102,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   /*
                   Beware: Custom Post Types will be deleted (not moved to trash) disregarding the $force_delete parameter. Use wp_trash_post() if you want to move a custom post to trash.
                   */ 
-                  if($remaining == 0) {
+                  if($remaining == "0.00") {
                         wp_delete_post($card->ID);
                         $this->logging("Deleted giftcard because it was empty", $code);
                         continue;
