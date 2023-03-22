@@ -3,7 +3,7 @@
 if (!defined('ABSPATH')) {
       exit;
 }
-
+ 
 
 // Extend the class with our serviceclass
 class wcioWGCSSPservice extends wcioWGCSSP
