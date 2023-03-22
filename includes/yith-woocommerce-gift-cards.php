@@ -40,9 +40,6 @@ class wcioWGCSSPservice extends wcioWGCSSP
       function wcio_wgcssp_cron_sync_woo_service_pos()
       {
 
-            // Start run
-            $this->logging("Started <strong>wcio_wgcssp_cron_sync_woo_service_pos</strong> function.", "");
-
             global $wpdb;
             $table_prefix = $wpdb->prefix;
             $WooCommerceGiftCardTableName = "posts";
@@ -50,9 +47,14 @@ class wcioWGCSSPservice extends wcioWGCSSP
             // If its less than 5 minutes ago since last action, then dont? allow this ro run again.
             $wcio_wgcssp_last_action = get_option('wcio_wgcssp_last_action');
             if ($wcio_wgcssp_last_action > (time() - 300)) {
-                  $this->logging("Stopped run because it is less than 5 minutes ago since last run.", "");
-                  return;
+                 return;
             }
+            
+            // Start run
+            $this->logging("Started <strong>wcio_wgcssp_cron_sync_woo_service_pos</strong> function.", "");
+
+             // Update last action
+             update_option('wcio_wgcssp_last_action', time());
 
             // Get Gift cards from database
             $wooGiftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName WHERE post_type = 'gift_card' ORDER BY ID DESC");
@@ -102,6 +104,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   */ 
                   if($remaining == 0) {
                         wp_delete_post($card->ID);
+                        $this->logging("Deleted giftcard because it was empty", $code);
                         continue;
                   }
                   
