@@ -75,7 +75,6 @@ class WC_wciowgcssp {
                 'name' => __( 'Gift card plugin', 'woocommerce-settings-tab-demo' ),
                 'type' => 'select',
                 'options' => array( 
-                  'woo-gift-cards' => __('WooCommerce Gift Cards'),
                   'yith-woocommerce-gift-cards' => __('YITH WooCommerce Gift Cards'),
                   ),      
                 'desc' => __( '', 'woocommerce-settings-tab-demo' ),
