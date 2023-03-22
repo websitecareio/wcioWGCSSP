@@ -95,7 +95,16 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   $code = $card->post_title; // YITH
                   $balance = number_format(get_post_meta($card->ID, "_ywgc_amount_total", true), 2, '.', '');  // This is initial balance
                   $remaining = number_format(get_post_meta($card->ID, "_ywgc_balance_total", true), 2, '.', ''); // This is remaining
-
+      
+                  // If this gift card is empty, then delete it.
+                  /*
+                  Beware: Custom Post Types will be deleted (not moved to trash) disregarding the $force_delete parameter. Use wp_trash_post() if you want to move a custom post to trash.
+                  */ 
+                  if($remaining == 0) {
+                        wp_delete_post($card->ID);
+                        continue;
+                  }
+                  
                   $searchGiftCardRaw = $this->search($servicePOSGiftcards, 'giftcardno', $this->codeToServicePos($code));
                   $searchGiftCardCount = count($searchGiftCardRaw);
 
