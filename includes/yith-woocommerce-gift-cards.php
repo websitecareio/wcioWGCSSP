@@ -340,6 +340,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
       }
 
       // Skal bruges for alle kort der stammer fra Woo og som skal til Customers 1st.
+      // This can only be removed in 22-03-2026 due to giftcard expire dates. 
       function codeToServicePos($code)
       {
             
