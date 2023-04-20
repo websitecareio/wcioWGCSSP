@@ -100,12 +100,15 @@ class wcioWGCSSPservice extends wcioWGCSSP
       
                   // If this gift card is empty, then delete it.
                   /*
-                  Beware: Custom Post Types will be deleted (not moved to trash) disregarding the $force_delete parameter. Use wp_trash_post() if you want to move a custom post to trash.
+                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                  Beware: CODE REMOVED DUE TO ERRORS: IF GIFTCARD IS REMOVED A NEW CARD WILL BE CREATED WITH VALUE; BECASUE C1ST STILL HAVE VALUE. GIVING USERS MULTIPLE USES OF GIFTCARD.
+                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!
                   */ 
+                  
                   if($remaining == "0.00") {
-                        wp_delete_post($card->ID);
-                        $this->logging("Deleted giftcard because it was empty", $code);
-                        continue;
+                        //wp_delete_post($card->ID);
+                        //$this->logging("Deleted giftcard because it was empty", $code);
+                       //continue;
                   }
                   
                   $searchGiftCardRaw = $this->search($servicePOSGiftcards, 'giftcardno', $this->codeToServicePos($code));
