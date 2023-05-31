@@ -3,7 +3,7 @@
  * Plugin Name: Woo Gift Cards synchronize Customers 1st. (Formerly known as ServicePOS)
  * Plugin URI: https://websitecare.io/
  * Description: Synchronize WooCommerce gift cards with Customers 1st. (Formerly known as ServicePOS)
- * Version: 1.3.6
+ * Version: 1.3.7
  * Author: Websitecare.io
  * Author URI: https://websitecare.io
  */
@@ -47,7 +47,10 @@ class wcioWGCSSP
 
         //Set the branch that contains the stable release.
         $myUpdateChecker->setBranch('main');
-
+	
+		// Verify schedule_event
+	    add_action('admin_init',  array($this, 'check_and_schedule_event'));
+	    
         // Add options
         add_action('admin_init', array($this, 'custom_plugin_register_settings'));
         add_action('admin_menu', array($this, 'custom_plugin_setting_page'));
@@ -150,6 +153,32 @@ class wcioWGCSSP
         return $schedules;
     }
 
+
+
+function check_and_schedule_event() {
+	
+	// wcio_wgcssp_cron_sync_woo_service_pos
+    $event_name = 'wcio_wgcssp_cron_sync_woo_service_pos';
+	// Check if the event is already scheduled
+    $next_scheduled = wp_next_scheduled($event_name);
+
+    if ($next_scheduled === false) {
+        // Event is not scheduled, schedule it
+        wp_schedule_event(time(), 'five_minutes', $event_name);
+    }
+	
+// wcio_wgcssp_cron_sync_service_pos_woo
+    $event_name = 'wcio_wgcssp_cron_sync_service_pos_woo';
+	// Check if the event is already scheduled
+    $next_scheduled = wp_next_scheduled($event_name);
+
+    if ($next_scheduled === false) {
+        // Event is not scheduled, schedule it
+        wp_schedule_event(time(), 'five_minutes', $event_name);
+    }
+	
+	
+}
 
     function activatePlugin()
     {
