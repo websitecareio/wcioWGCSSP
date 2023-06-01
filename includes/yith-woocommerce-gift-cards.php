@@ -145,9 +145,9 @@ class wcioWGCSSPservice extends wcioWGCSSP
 
                                           // Update giftcard in Customers 1st.
                                           $this->logging("Called PUT /giftcards/" . $giftcard["id"] . " with content <strong>" . json_encode($giftcardData) . "</strong><br>
-                                                      Giftcard: " . $giftcard["id"] . " will be updated in ServicePOS with this new value for AMOUNTSPENT: <strong>$servicePOSAmountSpent</strong>.<br>
+                                                      Giftcard: " . $giftcard["id"] . " will be updated in Customer1st with this new value for AMOUNTSPENT: <strong>$servicePOSAmountSpent</strong>.<br>
                                                       Because remaining ($remaining) is LOWER than servicePOSAmountRemaining (" . $giftcard["amount"] . " - " . $giftcard["amountspent"] . ").<br>
-                                                      Old value in ServicePOS for AMOUNTSPENT: <strong>$servicePOSAmountRemaining (" . $giftcard["amount"] . " - " . $giftcard["amountspent"] . ")</strong>", $code);
+                                                      Old value in Customer1st for AMOUNTSPENT: <strong>$servicePOSAmountRemaining (" . $giftcard["amount"] . " - " . $giftcard["amountspent"] . ")</strong>", $code);
                                           continue;
 
                                     } else {
