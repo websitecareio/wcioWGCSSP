@@ -3,7 +3,7 @@
 if (!defined('ABSPATH')) {
       exit;
 }
- 
+
 
 // Extend the class with our serviceclass
 class wcioWGCSSPservice extends wcioWGCSSP
@@ -19,21 +19,19 @@ class wcioWGCSSPservice extends wcioWGCSSP
             // Run this code if the gift card plugin is Woo Gift Card
             add_action('wcio_wgcssp_cron_sync_woo_service_pos', array($this, 'wcio_wgcssp_cron_sync_woo_service_pos'));
             add_action('wcio_wgcssp_cron_sync_service_pos_woo', array($this, 'wcio_wgcssp_cron_sync_service_pos_woo'));
-            add_action( 'admin_init',  array($this, 'ywgc_code_pattern'));
-            
+            add_action('admin_init',  array($this, 'ywgc_code_pattern'));
       }
-      
-      function ywgc_code_pattern() {
-            
+
+      function ywgc_code_pattern()
+      {
+
             $word = "-";
 
             // Test if string contains the word 
-            if(strpos(get_option("ywgc_code_pattern"), $word) !== false){
-                
-                  update_option( 'ywgc_code_pattern', '************' ); 
-                  
-            } 
-            
+            if (strpos(get_option("ywgc_code_pattern"), $word) !== false) {
+
+                  update_option('ywgc_code_pattern', '************');
+            }
       }
 
       //  Tjekker WooCommerce Gift Cards og opretter dem i Customers 1st. hvis de ikke allerede findes. Hvis de findes i Customers 1st. gør den ikke mere.
@@ -47,14 +45,14 @@ class wcioWGCSSPservice extends wcioWGCSSP
             // If its less than 5 minutes ago since last action, then dont? allow this ro run again.
             $wcio_wgcssp_last_action = get_option('wcio_wgcssp_last_action');
             if ($wcio_wgcssp_last_action > (time() - 300)) {
-                 return;
+                  return;
             }
-            
+
             // Start run
             $this->logging("Started <strong>wcio_wgcssp_cron_sync_woo_service_pos</strong> function.", "");
 
-             // Update last action
-             update_option('wcio_wgcssp_last_action', time());
+            // Update last action
+            update_option('wcio_wgcssp_last_action', time());
 
             // Get Gift cards from database
             $wooGiftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName WHERE post_type = 'gift_card' ORDER BY ID DESC");
@@ -63,23 +61,10 @@ class wcioWGCSSPservice extends wcioWGCSSP
             // Sets the amount of gift cards per page.
             $paginationPageLength = 249; // 250 is new Customers 1st. limit in future releases
 
-            // Get the count
-            $query = array("paginationPageLength" => 1, "paginationStart" => 0, "scope" => "sharegiftcards"); // Start from page 1 (0)
-            $giftcards = $this->call("GET", "/giftcards", $query);
-            // Get amount of giftcards from Customers 1st.
-            $countGiftcards = $giftcards["count"];
-           
-            $hasMore = $giftcards["hasMore"]; // Read note
-            /*
-            The "count" parameter will no longer be supported and will be removed from the API response. You can use the "hasMore" parameter to determine if there are additional pages of data available. When "hasMore" is true, it means there's more data to fetch. When "hasMore" is false, it indicates that you've reached the end of the available data.
-            */
-            
-            $this->logging("Called GET /giftcards with parameters <strong>\"paginationPageLength\" => 1, \"paginationStart\" => 0</strong> and found <strong>$countGiftcards</strong> to be processed.", "");
-
             // Make the full list of giftcards from Customers 1st.
-            $pagelimit = ceil($countGiftcards / $paginationPageLength);
             $servicePOSGiftcards = array();
-            for ($x = 0; $x <= $pagelimit; $x++) {
+            $x = 0;
+            while (true) {
 
                   // We need to loop all pages
                   // Now we do the query with the paging.
@@ -92,7 +77,14 @@ class wcioWGCSSPservice extends wcioWGCSSP
 
                   // Merge all giftcards from Customers 1st. into one array.
                   $servicePOSGiftcards = array_merge($servicePOSGiftcards, $queryGiftcards["content"]);
+
+                  // If hasMore is false, break
+                  if ($queryGiftcards["hasMore"] == false) {
+                        break;
+                  }
+                  $x++;
             }
+
 
             // Loop all WooCommerce giftcards then in each giftcard we loop Customers 1st. to find it.
             foreach ($wooGiftCards as $card) {
@@ -103,20 +95,14 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   $code = $card->post_title; // YITH
                   $balance = floatval(get_post_meta($card->ID, "_ywgc_amount_total", true));  // This is initial balance
                   $remaining = floatval(get_post_meta($card->ID, "_ywgc_balance_total", true)); // This is remaining
-      
+
                   // If this gift card is empty, then delete it.
                   /*
                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!
                   Beware: CODE REMOVED DUE TO ERRORS: IF GIFTCARD IS REMOVED A NEW CARD WILL BE CREATED WITH VALUE; BECASUE C1ST STILL HAVE VALUE. GIVING USERS MULTIPLE USES OF GIFTCARD.
                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                  */ 
-                  
-                  if($remaining == "0.00") {
-                        //wp_delete_post($card->ID);
-                        //$this->logging("Deleted giftcard because it was empty", $code);
-                       //continue;
-                  }
-                  
+                  */
+
                   $searchGiftCardRaw = $this->search($servicePOSGiftcards, 'giftcardno', $this->codeToServicePos($code));
                   $searchGiftCardCount = count($searchGiftCardRaw);
 
@@ -151,11 +137,10 @@ class wcioWGCSSPservice extends wcioWGCSSP
 
                                           // Update giftcard in Customers 1st.
                                           $this->logging("Called PUT /giftcards/" . $giftcard["id"] . " with content <strong>" . json_encode($giftcardData) . "</strong><br>
-                                                      Giftcard: " . $giftcard["id"] . " will be updated in Customer1st with this new value for AMOUNTSPENT: <strong>$servicePOSAmountSpent</strong>.<br>
+                                                      Giftcard: " . $giftcard["id"] . " will be updated in ServicePOS with this new value for AMOUNTSPENT: <strong>$servicePOSAmountSpent</strong>.<br>
                                                       Because remaining ($remaining) is LOWER than servicePOSAmountRemaining (" . $giftcard["amount"] . " - " . $giftcard["amountspent"] . ").<br>
-                                                      Old value in Customer1st for AMOUNTSPENT: <strong>$servicePOSAmountRemaining (" . $giftcard["amount"] . " - " . $giftcard["amountspent"] . ")</strong>", $code);
+                                                      Old value in ServicePOS for AMOUNTSPENT: <strong>$servicePOSAmountRemaining (" . $giftcard["amount"] . " - " . $giftcard["amountspent"] . ")</strong>", $code);
                                           continue;
-
                                     } else {
 
                                           // This code does nothing other than updating something with the axact same value...
@@ -166,11 +151,9 @@ class wcioWGCSSPservice extends wcioWGCSSP
                                           $this->logging("Giftcard: " . $code . " will be updated in WooCommerce with this new remaining value: $servicePOSAmountRemaining<br>
                                                       This happens because the remaning value WooCommerce value: $remaining is equal to ServicePOS value: $servicePOSAmountRemaining and needs to be updated", $code);
                                           continue;
-
                                     }
                               }
                         }
-
                   } else if ($searchGiftCardCount == 0) { // IF card wasnt found in Customers 1st. query
 
                         // It wasnt dead, now create it in Customers 1st. since its not there. 
@@ -179,7 +162,6 @@ class wcioWGCSSPservice extends wcioWGCSSP
 
                               // The balance was 0, most likely due to the card wasnt created with a balance, then we need to use remaining as balance and fix the card.
                               $giftcardAmount = $remaining;
-
                         } else {
 
                               $giftcardAmount = $balance;
@@ -203,12 +185,10 @@ class wcioWGCSSPservice extends wcioWGCSSP
                         $createServicePOSGiftcard = $this->call("POST", "/giftcards",  ['content' => $giftcard]);
                         $this->logging("Giftcard: " . $this->codeToServicePos($code) . " will be created in ServicePOS with this value: <strong>$giftcardAmount</strong>. Content: <strong>" . json_encode($giftcard) . "</strong>.<br>", $this->codeToServicePos($code));
                         continue;
-
                   }
             }
 
             $this->logging("Stopped <strong>wcio_wgcssp_cron_sync_woo_service_pos</strong> function.", "");
-
       }
 
       // Tjekker Customers 1st. gift cards og opretter dem i WooCommerce Gift Cards hvis de ikke allerede findes. Hvis de findes i WooCommerce Gift Cards gør den ikke mere
@@ -222,7 +202,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
             $wcio_wgcssp_last_action_2 = get_option('wcio_wgcssp_last_action_2');
             if ($wcio_wgcssp_last_action_2 > (time() - 300)) {
                   $this->logging("Stopped run because it is less than 5 minutes ago since last run.", "");
-                  return;
+                 // return;
             }
 
 
@@ -232,20 +212,12 @@ class wcioWGCSSPservice extends wcioWGCSSP
             $WooCommerceGiftCardTableName = "posts";
 
             // Sets the amount of gift cards per page.
-            $paginationPageLength = 249; // 250 is new Customers 1st. limit in future releases. Settings 1 below.
+            $paginationPageLength = 249; // 250 is new Customers 1st. limit in future releases
 
-            // Get the count
-            $query = array("paginationPageLength" => 1, "paginationStart" => 0, "scope" => "sharegiftcards"); // Start from page 1 (0)
-            $giftcards = $this->call("GET", "/giftcards", $query);
-            // Get amount of giftcards from ServicePOS
-            $countGiftcards = $giftcards["count"];
-            $this->logging("Called GET /giftcards with parameters <strong>\"paginationPageLength\" => 1, \"paginationStart\" => 0</strong> and found <strong>$countGiftcards</strong> to be processed.", "");
-
-
-            // Now loop the calls until we have looped though all the giftcards
-            // $x is the page. 
-            $pagelimit = ceil($countGiftcards / $paginationPageLength);
-            for ($x = 0; $x <= $pagelimit; $x++) {
+            // Make the full list of giftcards from Customers 1st.
+            $servicePOSGiftcards = array();
+            $x = 0;
+            while (true) {
 
                   // Now we do the query with the paging.
                   $paginationStart = $paginationPageLength * $x;
@@ -257,7 +229,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   $this->logging("Called GET /giftcards with parameters <strong>\"paginationPageLength\" => $paginationPageLength, \"paginationStart\" => $paginationStart</strong><br><strong>Count:</strong> " . count($giftcards["content"]) . "", "");
 
                   // Loops all Customers 1st. giftcard
-                  foreach ($giftcards["content"] as $key => $card) {
+                  foreach ($giftcards["content"] as $card) {
 
 
                         // Update last action
@@ -270,13 +242,14 @@ class wcioWGCSSPservice extends wcioWGCSSP
                         $amountspent = floatval($card["amountspent"]); //0
 
                         $amountremaining = $amount - $amountspent; //0
-
+     
                         // Make woo data format of giftcard and search for the giftcard
                         $codeToWoo = $this->codeToWoo($code);
                         $wooGiftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName WHERE post_type = 'gift_card' AND post_title = '$codeToWoo' LIMIT 1");
 
                         // If gift card was found in WooCommerce and we verified it was the same card
                         $wooGiftCardNumber = $wooGiftCards["0"]->post_title;
+
                         if (count($wooGiftCards) == "1" && $wooGiftCardNumber == $codeToWoo && $code != "") {
 
                               $balance = floatval(get_post_meta($wooGiftCards["0"]->ID, "_ywgc_amount_total", true)) ?? 0;  // This is initial balance
@@ -306,7 +279,6 @@ class wcioWGCSSPservice extends wcioWGCSSP
                                           Because wooRemaning ($wooRemaning) is LOWER than amountremaining ($amountremaining).<br>
                                           Old value in Customers 1st.: <strong>$amountremaining ($amount-$amountspent)</strong>", $wooGiftCardNumber);
                                           continue;
-
                                     } else {
 
                                           // Customers 1st. have most spent, then update WooCommerce
@@ -317,24 +289,24 @@ class wcioWGCSSPservice extends wcioWGCSSP
                                           Because wooRemaning ($wooRemaning) is HIGHER than amountremaining ($amountremaining).<br>
                                           Old value in WooCommerce: <strong>$spent = ($balance-$remaining)</strong>", $wooGiftCardNumber);
                                           continue;
-
                                     }
                               }
-
+                            
                               // Giftcard wasnt found in WooCommerce      
                         } else if (count($wooGiftCards) == "0") {
-
+                           
                               // Skip if its zero, we dont want empty cards in the system.
                               if ($amountremaining == 0) {
                                     continue;
                               }
-
+                         
                               // It wasnt found at WooCommerce.
                               // The card wasnt found in WooCommerce, we need to create it.
                               $time = time();
 
                               $newWooGiftCardRemaning = $amountremaining;
 
+                       
                               // Create post object
                               $my_post = array(
                                     'post_title'    => wp_strip_all_tags($codeToWoo),
@@ -343,19 +315,25 @@ class wcioWGCSSPservice extends wcioWGCSSP
                                     'post_author'   => 1,
                                     'post_type'     => "gift_card"
                               );
-
+                            
                               // Insert the post into the database
                               $postID = wp_insert_post($my_post);
 
-                              get_post_meta($postID, "_ywgc_amount_total", $amount);  // This is initial balance
-                              update_post_meta($postID, "_ywgc_balance_total", $newWooGiftCardRemaning); // This is remaining
-
+                              update_post_meta($postID, "_ywgc_amount_total", $amount);  // The gift card amount
+                              update_post_meta($postID, "_ywgc_balance_total", $newWooGiftCardRemaning); // The current amount available for the customer
+                            
                               $this->logging("Giftcard: " . wp_strip_all_tags($codeToWoo) . " will be created in WooCommerce with this remaining value (Original card value: $amount): <strong>$newWooGiftCardRemaning</strong>.<br>", wp_strip_all_tags($codeToWoo));
                               continue;
-                              
                         }
                   }
+
+                  // If hasMore is false, break
+                  if ($queryGiftcards["hasMore"] == false) {
+                        break;
+                  }
+                  $x++;
             }
+
 
             $this->logging("Stopped <strong>wcio_wgcssp_cron_sync_service_pos_woo</strong> function.", "");
       }
@@ -364,25 +342,21 @@ class wcioWGCSSPservice extends wcioWGCSSP
       // This can only be removed in 22-03-2026 due to giftcard expire dates. 
       function codeToServicePos($code)
       {
-            
+
             $word = "-";
 
             // Test if string contains the word 
-            if(strpos($code, $word) !== false){
-                  
+            if (strpos($code, $word) !== false) {
+
                   // Input XXXX-XXXX-XXXX-XXXX
                   // Output: 724503989151  (12 char)()
                   $code = str_replace("XXXX", "", $code); // removes X s that have been added to match format.
                   $code = str_replace("-", "", $code); // Removes - s that have been added to match format.
                   return $code; // outputs a Customers 1st. gift card.
-                  
-            } else{
-                    return str_replace("XXXX", "", $code); // Do nothing with the code, just send it raw.
-            }
-            
-       
-        
 
+            } else {
+                  return str_replace("XXXX", "", $code); // Do nothing with the code, just send it raw.
+            }
       }
 
       // Skal bruges for alle kort der stammer fra Customers 1st. og som skal til Woo
@@ -391,20 +365,16 @@ class wcioWGCSSPservice extends wcioWGCSSP
             $word = "-";
 
             // Test if string contains the word 
-            if(strpos($code, $word) !== false){
-                
+            if (strpos($code, $word) !== false) {
+
                   // Input: 724503989151  (12 char)
                   // Output XXXX-XXXX-XXXX-XXXX
                   $number = str_pad($code, 16, "X", STR_PAD_RIGHT);
                   $str = chunk_split($number, 4, '-');
                   $str = substr($str, 0, -1);
                   return $str;
-                  
-            } else{
-                    return $code; // Do nothing with the code, just send it raw.
+            } else {
+                  return $code; // Do nothing with the code, just send it raw.
             }
-            
-
       }
 }
-
