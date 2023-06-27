@@ -68,6 +68,8 @@ class wcioWGCSSPservice extends wcioWGCSSP
             $giftcards = $this->call("GET", "/giftcards", $query);
             // Get amount of giftcards from Customers 1st.
             $countGiftcards = $giftcards["count"];
+            $hasMore = $giftcards["hasMore"];
+            
             $this->logging("Called GET /giftcards with parameters <strong>\"paginationPageLength\" => 1, \"paginationStart\" => 0</strong> and found <strong>$countGiftcards</strong> to be processed.", "");
 
             // Make the full list of giftcards from Customers 1st.
