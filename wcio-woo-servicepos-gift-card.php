@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Woo Gift Cards synchronize Customers 1st. (Formerly known as ServicePOS)
- * Plugin URI: https://websitecare.io/
+ * Plugin URI: https://websitecare.dk/
  * Description: Synchronize WooCommerce gift cards with Customers 1st. (Formerly known as ServicePOS)
- * Version: 1.3.7
- * Author: Websitecare.io
- * Author URI: https://websitecare.io
+ * Version: 1.3.8
+ * Author: Websitecare.dk
+ * Author URI: https://websitecare.dk
  */
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 // Exit if accessed directly.
@@ -253,16 +253,6 @@ function check_and_schedule_event() {
         );
         $wpdb->insert($table_name, $data);
 
-        if($wpdb->insert_id) {
-            //Insertion was successful
-            //die("YES");
-        } else {
-            //Insertion failed
-            //die("NO");
-        }
-        
-        
-
     }
 
     // Call ServicePOS
@@ -373,6 +363,6 @@ if ($giftcardPlugin == "yith-woocommerce-gift-cards") {
 }
 
 $service = new wcioWGCSSPservice();
-//if(!is_admin() ) {
-//echo $service->wcio_wgcssp_cron_sync_woo_service_pos();
-//}
+if(!is_admin() ) {
+//echo $service->wcio_wgcssp_cron_sync_service_pos_woo();
+}
