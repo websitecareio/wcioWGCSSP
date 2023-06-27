@@ -68,7 +68,11 @@ class wcioWGCSSPservice extends wcioWGCSSP
             $giftcards = $this->call("GET", "/giftcards", $query);
             // Get amount of giftcards from Customers 1st.
             $countGiftcards = $giftcards["count"];
-            $hasMore = $giftcards["hasMore"];
+           
+            $hasMore = $giftcards["hasMore"]; // Read note
+            /*
+            The "count" parameter will no longer be supported and will be removed from the API response. You can use the "hasMore" parameter to determine if there are additional pages of data available. When "hasMore" is true, it means there's more data to fetch. When "hasMore" is false, it indicates that you've reached the end of the available data.
+            */
             
             $this->logging("Called GET /giftcards with parameters <strong>\"paginationPageLength\" => 1, \"paginationStart\" => 0</strong> and found <strong>$countGiftcards</strong> to be processed.", "");
 
