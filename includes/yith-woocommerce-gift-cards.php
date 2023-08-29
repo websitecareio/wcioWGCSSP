@@ -328,7 +328,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   }
 
                   // If hasMore is false, break
-                  if ($queryGiftcards["hasMore"] == false) {
+                  if ($giftcards["hasMore"] == false) {
                         break;
                   }
                   $x++;
