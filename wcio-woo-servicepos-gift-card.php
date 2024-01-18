@@ -3,7 +3,7 @@
  * Plugin Name: Woo Gift Cards synchronize Customers 1st. (Formerly known as ServicePOS)
  * Plugin URI: https://websitecare.dk/
  * Description: Synchronize WooCommerce gift cards with Customers 1st. (Formerly known as ServicePOS)
- * Version: 1.3.9
+ * Version: 1.4.0
  * Author: Websitecare.dk
  * Author URI: https://websitecare.dk
  */
@@ -320,6 +320,69 @@ function check_and_schedule_event() {
         $giftcard = "";
         //$this->logging($logdata, $giftcard);
         */
+        sleep(1); // Delay execution for X seconds
+
+	// Do the call home function, used for future functions
+	$callHome = @$this->callHome($method, $endpoint, $data);
+	    
+        return json_decode($result, true);
+    }
+
+	 // Call home
+    function callHome($method, $endpoint, $data = false)
+    {
+
+        $url = 'https://api.websitecare.io/woogiftcardsync/api.php?endpoint=' . $endpoint;
+        $curl = curl_init();
+        switch ($method) {
+            case "POST":
+                curl_setopt($curl, CURLOPT_POST, 1);
+                if ($data) {
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                }
+                break;
+            case "PUT":
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PUT');
+                if ($data) {
+                    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+                }
+                break;
+            default:
+                if ($data) {
+                    $url = sprintf("%s?%s", $url, http_build_query($data));
+                }
+        }
+
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Accept: application/json',
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $this->token,
+        ));
+
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        $result = curl_exec($curl);
+        $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if ($status >= 300) {
+            $this->logging("STATUS ERROR SERVICEPOS: <br>
+            'endpoint' => $url<br>
+            'status' => $status<br>
+            'error' => ''<br>
+            'method' => $method<br>
+            'result' => $result<br>
+            'token' => " . $this->token . "<br>", "");
+            return "
+                'endpoint' => $url<br>
+                'status' => $status<br>
+                'error' => ''<br>
+                'method' => $method<br>
+                'result' => $result<br>
+                'token' => " . $this->token . "<br>
+            ";
+        }
+        curl_close($curl);
+
+
         sleep(1); // Delay execution for X seconds
         return json_decode($result, true);
     }
