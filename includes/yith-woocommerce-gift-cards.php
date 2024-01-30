@@ -75,6 +75,15 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   // Log the data. We cannot use $giftcards in the log data. For some reason it cannot save it.. DB character limit possible. Using MEDIUMTEXT or LONGTEXT might fix it.
                   $this->logging("Called GET /giftcards with parameters <strong>\"paginationPageLength\" => $paginationPageLength, \"paginationStart\" => $paginationStart</strong><br><strong>Count:</strong> " . count($queryGiftcards["content"]) . "", "");
 
+                                    // Check for errors
+                if($queryGiftcards == null || $queryGiftcards == "error") {
+              
+                        // Log the data. We cannot use $giftcards in the log data. For some reason it cannot save it.. DB character limit possible. Using MEDIUMTEXT or LONGTEXT might fix it.
+                        $this->logging("No response from API or error with authentication.", "");
+                        break;    
+
+                  }
+                  
                   // Merge all giftcards from Customers 1st. into one array.
                   $servicePOSGiftcards = array_merge($servicePOSGiftcards, $queryGiftcards["content"]);
 
@@ -228,6 +237,16 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   // Log the data. We cannot use $giftcards in the log data. For some reason it cannot save it.. DB character limit possible. Using MEDIUMTEXT or LONGTEXT might fix it.
                   $this->logging("Called GET /giftcards with parameters <strong>\"paginationPageLength\" => $paginationPageLength, \"paginationStart\" => $paginationStart</strong><br><strong>Count:</strong> " . count($giftcards["content"]) . "", "");
 
+                                                      // Check for errors
+                if($giftcards == null || $giftcards == "error") {
+              
+                        // Log the data. We cannot use $giftcards in the log data. For some reason it cannot save it.. DB character limit possible. Using MEDIUMTEXT or LONGTEXT might fix it.
+                        $this->logging("No response from API or error with authentication.", "");
+                        break;    
+
+                  }
+
+                  
                   // Loops all Customers 1st. giftcard
                   foreach ($giftcards["content"] as $card) {
 
