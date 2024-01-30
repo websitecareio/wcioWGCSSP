@@ -79,7 +79,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   $servicePOSGiftcards = array_merge($servicePOSGiftcards, $queryGiftcards["content"]);
 
                   // If hasMore is false, break
-                  if ($queryGiftcards["hasMore"] == false) {
+                  if ($queryGiftcards["hasMore"] == false || $queryGiftcards == null) {
                         break;
                   }
                   $x++;
@@ -328,7 +328,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   }
 
                   // If hasMore is false, break
-                  if ($giftcards["hasMore"] == false) {
+                  if ($giftcards["hasMore"] == false || $queryGiftcards == null) {
                         break;
                   }
                   $x++;
