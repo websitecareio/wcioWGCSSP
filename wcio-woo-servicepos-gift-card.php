@@ -298,7 +298,7 @@ function check_and_schedule_event() {
             'method' => $method<br>
             'result' => $result<br>
             'token' => " . $this->token . "<br>", "");
-            return "error";
+            exit; // just stop script, to avoid loops.
         }
         curl_close($curl);
 
