@@ -298,14 +298,7 @@ function check_and_schedule_event() {
             'method' => $method<br>
             'result' => $result<br>
             'token' => " . $this->token . "<br>", "");
-            return "
-                'endpoint' => $url<br>
-                'status' => $status<br>
-                'error' => ''<br>
-                'method' => $method<br>
-                'result' => $result<br>
-                'token' => " . $this->token . "<br>
-            ";
+            return "error";
         }
         curl_close($curl);
 
