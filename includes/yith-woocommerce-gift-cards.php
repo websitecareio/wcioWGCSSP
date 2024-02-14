@@ -57,6 +57,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
             // Get Gift cards from database
             $wooGiftCards = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName WHERE post_type = 'gift_card' ORDER BY ID DESC");
 
+           
             // Get ServicePOS giftcards
             // Sets the amount of gift cards per page.
             $paginationPageLength = 249; // 250 is new Customers 1st. limit in future releases
@@ -211,7 +212,7 @@ class wcioWGCSSPservice extends wcioWGCSSP
             $wcio_wgcssp_last_action_2 = get_option('wcio_wgcssp_last_action_2');
             if ($wcio_wgcssp_last_action_2 > (time() - 300)) {
                   $this->logging("Stopped run because it is less than 5 minutes ago since last run.", "");
-                 // return;
+                 return;
             }
 
 
