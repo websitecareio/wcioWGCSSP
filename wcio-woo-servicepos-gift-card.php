@@ -3,7 +3,7 @@
  * Plugin Name: Woo Gift Cards synchronize Customers 1st. (Formerly known as ServicePOS)
  * Plugin URI: https://websitecare.dk/
  * Description: Synchronize WooCommerce gift cards with Customers 1st. (Formerly known as ServicePOS)
- * Version: 1.4.0
+ * Version: 1.4.1
  * Author: Websitecare.dk
  * Author URI: https://websitecare.dk
  */
@@ -407,7 +407,7 @@ $giftcardPlugin = $wcioWGCSSP->giftcardplugin;
 // Include Gift card services
 if ($giftcardPlugin == "woo-gift-cards" || $giftcardPlugin == "") {
 
-    include(dirname(__FILE__) . "/includes/woo-gift-cards.php");
+    //include(dirname(__FILE__) . "/includes/woo-gift-cards.php");
 
 }
 
