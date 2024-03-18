@@ -360,41 +360,61 @@ class wcioWGCSSPservice extends wcioWGCSSP
 
       // Skal bruges for alle kort der stammer fra Woo og som skal til Customers 1st.
       // This can only be removed in 22-03-2026 due to giftcard expire dates. 
-      function codeToServicePos($code)
-      {
+       function codeToServicePos($code)
+{
+      $word = "-";
+      $sectionLength = 4;
 
-            $word = "-";
-
-            // Test if string contains the word 
-            if (strpos($code, $word) !== false) {
-
-                  // Input XXXX-XXXX-XXXX-XXXX
-                  // Output: 724503989151  (12 char)()
-                  $code = str_replace("XXXX", "", $code); // removes X s that have been added to match format.
-                  $code = str_replace("-", "", $code); // Removes - s that have been added to match format.
-                  return $code; // outputs a Customers 1st. gift card.
-
-            } else {
-                  return str_replace("XXXX", "", $code); // Do nothing with the code, just send it raw.
+      // Test if string contains the word "-" and if each section has 4 characters
+      $sections = explode('-', $code);
+      $allSectionsValid = true;
+      foreach ($sections as $section) {
+            if (strlen($section) != $sectionLength || !preg_match('/^[a-zA-Z0-9]+$/', $section)) {
+                  $allSectionsValid = false;
+                  break;
             }
       }
+
+      if (strpos($code, $word) !== false && $allSectionsValid) {
+            // Input: XXXX-XXXX-XXXX-XXXX
+            // Output: 724503989151  (12 char)
+            $code = str_replace("XXXX", "", $code); // Remove X's that have been added to match format
+            $code = str_replace("-", "", $code); // Remove hyphens
+            return $code; // Output the original code without X's and hyphens
+      } else {
+            return str_replace("--", "", str_replace("XXXX", "", $code)); // If the code doesn't meet the criteria, remove X's and return it as is
+      }
+}
+      
 
       // Skal bruges for alle kort der stammer fra Customers 1st. og som skal til Woo
-      function codeToWoo($code)
-      {
-            $word = "-";
+ function codeToWoo($code)
+{
+      $word = "-";
+      $sectionLength = 4;
 
-            // Test if string contains the word 
-            if (strpos($code, $word) !== false) {
-
-                  // Input: 724503989151  (12 char)
-                  // Output XXXX-XXXX-XXXX-XXXX
-                  $number = str_pad($code, 16, "X", STR_PAD_RIGHT);
-                  $str = chunk_split($number, 4, '-');
-                  $str = substr($str, 0, -1);
-                  return $str;
-            } else {
-                  return $code; // Do nothing with the code, just send it raw.
+      // Test if string contains the word "-" and if each section has 4 characters
+      $sections = explode('-', $code);
+      $allSectionsValid = true;
+      foreach ($sections as $section) {
+            if (strlen($section) != $sectionLength || !preg_match('/^[a-zA-Z0-9]+$/', $section)) {
+                  $allSectionsValid = false;
+                  break;
             }
       }
+
+      if (strpos($code, $word) !== false && $allSectionsValid) {
+            // Input: 7245-0398-9151  (12 char)
+            // Output XXXX-XXXX-XXXX-XXXX
+            $number = str_pad($code, 16, "X", STR_PAD_RIGHT); // Pad the code to 16 characters with X
+            $str = chunk_split($number, 4, '-'); // Split the code into groups of 4 characters separated by -
+            $str = substr($str, 0, -1); // Remove the last hyphen
+            
+            // Fix for double hyphens after change
+            $str = str_replace("--", "-", $str); // Replace any double hyphens with single hyphens
+            return $str; // Return the transformed code
+      } else {
+            return $code; // If the code doesn't meet the criteria, return it as is
+      }
+}
 }
