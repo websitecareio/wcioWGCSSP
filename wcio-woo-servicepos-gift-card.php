@@ -3,7 +3,7 @@
  * Plugin Name: Woo Gift Cards synchronize Customers 1st. (Formerly known as ServicePOS)
  * Plugin URI: https://websitecare.dk/
  * Description: Synchronize WooCommerce gift cards with Customers 1st. (Formerly known as ServicePOS)
- * Version: 1.4.2
+ * Version: 1.4.3
  * Author: Websitecare.dk
  * Author URI: https://websitecare.dk
  */
@@ -316,7 +316,7 @@ function check_and_schedule_event() {
         sleep(1); // Delay execution for X seconds
 
 	// Do the call home function, used for future functions
-	$callHome = @$this->callHome($method, $endpoint, $data);
+	//$callHome = @$this->callHome($method, $endpoint, $data);
 	    
         return json_decode($result, true);
     }
