@@ -637,41 +637,6 @@ function call($method, $endpoint, $data = false)
     }
 
 
-
-/**
- * Recursively search for all occurrences of a key-value pair in a multidimensional array.
- *
- * This function recursively searches through a multidimensional array to find all occurrences
- * where a specific key has a given value. It returns an array of all matching subarrays.
- *
- * @param array $array The array to search through.
- * @param string|int $key The key to search for.
- * @param mixed $value The value of the key to match.
- * @return array An array of subarrays where the key matches the given value.
- */
-  /*  function search($array, $key, $value)
-    {
-        $results = array();
-
-        if (is_array($array)) {
-            if (isset($array[$key]) && $array[$key] == $value) {
-                $results[] = $array;
-            }
-
-            foreach ($array as $subarray) {
-                $results = array_merge($results, $this->search($subarray, $key, $value));
-            }
-        }
-
-        return $results;
-    }
-    */
-
 }
 
-
-
 $wcioWGCSSP = new wcioWGCSSP();
-//$giftcardPlugin = $wcioWGCSSP->giftcardplugin;
-//include(dirname(__FILE__) . "/includes/yith-woocommerce-gift-cards.php");
-//$service = new wcioWGCSSPservice();
