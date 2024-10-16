@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Plugin Name: Woo Gift Cards synchronize Customers 1st. 
  * Plugin URI: https://websitecare.dk/
@@ -408,7 +407,7 @@ function call($method, $endpoint, $data = false)
         if ($meta_key === '_ywgc_balance_total') {
 
             // Update new value in C1ST
-            $giftcardNo = get_the_title( $post_id ); // 858400776131
+            $giftcardNo = get_the_title( $post_id ); // Example: 858400776131
             $amount_total = get_post_meta($post_id, '_ywgc_amount_total', true);
             $balance_total = $meta_value;
 
@@ -417,9 +416,11 @@ function call($method, $endpoint, $data = false)
 
                 $this->updateGiftCardC1ST($giftcardId, $amount_total, $balance_total);
 
-            } else {
+            } else { // Giftcard wsa not found in C1ST, create it instead. 
 
-               error_log("Giftcard was not found in C1ST , unable to update balance.  $giftcardNo", 0);
+                
+                $this->createGiftCardC1ST($giftcardNo, $amount_total, $balance_total);
+              // error_log("Giftcard was not found in C1ST , unable to update balance.  $giftcardNo", 0);
                
             }    
 
@@ -594,9 +595,21 @@ function call($method, $endpoint, $data = false)
         $wooGiftCard = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName WHERE post_type = 'gift_card' AND post_title = '$giftcardno' LIMIT 1");
         $postID = $wooGiftCard["0"]->ID;
 
-        // If there is no post id, fail this.
+        // If there is no post id, create the giftcard 
         if(!$postID) {
-            return new WP_REST_Response('Gift Card not found in WooCommerce!', 412 ); // 412 Precondition Failed. A precondition in the request is not met, that prevents it from executing.
+
+                // Create the giftcard
+        $newGiftCard = array(
+            'post_title'    => wp_strip_all_tags($giftcardno),
+            'post_content'  => "",
+            'post_status'   => 'publish',
+            'post_author'   => 1,
+            'post_type'     => "gift_card"
+        );
+
+        // Insert the post into the database
+        $postID = wp_insert_post($newGiftCard);
+
         }
 
         // Remaining from C1ST
