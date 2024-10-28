@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Plugin Name: Woo Gift Cards synchronize Customers 1st. 
  * Plugin URI: https://websitecare.dk/
  * Description: Synchronize WooCommerce gift cards with Customers 1st. 
- * Version: 2.0.0
+ * Version: 1.4.4
  * Author: Websitecare.dk
  * Author URI: https://websitecare.dk
  */
@@ -407,7 +408,7 @@ function call($method, $endpoint, $data = false)
         if ($meta_key === '_ywgc_balance_total') {
 
             // Update new value in C1ST
-            $giftcardNo = get_the_title( $post_id ); // Example: 858400776131
+            $giftcardNo = get_the_title( $post_id ); // 858400776131
             $amount_total = get_post_meta($post_id, '_ywgc_amount_total', true);
             $balance_total = $meta_value;
 
@@ -416,11 +417,9 @@ function call($method, $endpoint, $data = false)
 
                 $this->updateGiftCardC1ST($giftcardId, $amount_total, $balance_total);
 
-            } else { // Giftcard wsa not found in C1ST, create it instead. 
+            } else {
 
-                
-                $this->createGiftCardC1ST($giftcardNo, $amount_total, $balance_total);
-              // error_log("Giftcard was not found in C1ST , unable to update balance.  $giftcardNo", 0);
+               error_log("Giftcard was not found in C1ST , unable to update balance.  $giftcardNo", 0);
                
             }    
 
@@ -511,7 +510,7 @@ function call($method, $endpoint, $data = false)
         $existing_giftcards = get_posts($args);
 
         if ($existing_giftcards) {
-            return new WP_REST_Response('Gift Card not created (Duplicated), but received the call!', 200); // Duplicated data
+            return new WP_REST_Response('Gift Card Created!', 409); // Duplicated data
         }
 
         // Create the giftcard
@@ -595,21 +594,9 @@ function call($method, $endpoint, $data = false)
         $wooGiftCard = $wpdb->get_results("SELECT * FROM $table_prefix$WooCommerceGiftCardTableName WHERE post_type = 'gift_card' AND post_title = '$giftcardno' LIMIT 1");
         $postID = $wooGiftCard["0"]->ID;
 
-        // If there is no post id, create the giftcard 
+        // If there is no post id, fail this.
         if(!$postID) {
-
-                // Create the giftcard
-        $newGiftCard = array(
-            'post_title'    => wp_strip_all_tags($giftcardno),
-            'post_content'  => "",
-            'post_status'   => 'publish',
-            'post_author'   => 1,
-            'post_type'     => "gift_card"
-        );
-
-        // Insert the post into the database
-        $postID = wp_insert_post($newGiftCard);
-
+            return new WP_REST_Response('Gift Card not found in WooCommerce!', 412 ); // 412 Precondition Failed. A precondition in the request is not met, that prevents it from executing.
         }
 
         // Remaining from C1ST
@@ -650,6 +637,41 @@ function call($method, $endpoint, $data = false)
     }
 
 
+
+/**
+ * Recursively search for all occurrences of a key-value pair in a multidimensional array.
+ *
+ * This function recursively searches through a multidimensional array to find all occurrences
+ * where a specific key has a given value. It returns an array of all matching subarrays.
+ *
+ * @param array $array The array to search through.
+ * @param string|int $key The key to search for.
+ * @param mixed $value The value of the key to match.
+ * @return array An array of subarrays where the key matches the given value.
+ */
+  /*  function search($array, $key, $value)
+    {
+        $results = array();
+
+        if (is_array($array)) {
+            if (isset($array[$key]) && $array[$key] == $value) {
+                $results[] = $array;
+            }
+
+            foreach ($array as $subarray) {
+                $results = array_merge($results, $this->search($subarray, $key, $value));
+            }
+        }
+
+        return $results;
+    }
+    */
+
 }
 
+
+
 $wcioWGCSSP = new wcioWGCSSP();
+//$giftcardPlugin = $wcioWGCSSP->giftcardplugin;
+//include(dirname(__FILE__) . "/includes/yith-woocommerce-gift-cards.php");
+//$service = new wcioWGCSSPservice();
