@@ -104,8 +104,27 @@ class wcioWGCSSPservice extends wcioWGCSSP
                   update_option('wcio_wgcssp_last_action', time());
 
                   $code = $card->post_title; // YITH
-                  $balance = floatval(get_post_meta($card->ID, "_ywgc_amount_total", true));  // This is initial balance
-                  $remaining = floatval(get_post_meta($card->ID, "_ywgc_balance_total", true)); // This is remaining
+                  //$balance = floatval(get_post_meta($card->ID, "_ywgc_amount_total", true));  // This is initial balance
+                  //$remaining = floatval(get_post_meta($card->ID, "_ywgc_balance_total", true)); // This is remaining
+
+		   // Check if "_ywgc_amount_total" exists, if not continue to the next iteration.
+               $balance_meta = get_post_meta($card->ID, "_ywgc_amount_total", true);
+               if ( $balance_meta === false ) {
+                   continue; // Skip to the next card if meta doesn't exist.
+               }
+               $balance = floatval($balance_meta);
+           
+               // Check if "_ywgc_balance_total" exists, if not continue to the next iteration.
+               $remaining_meta = get_post_meta($card->ID, "_ywgc_balance_total", true);
+               if ( $remaining_meta === false ) {
+                   continue; // Skip to the next card if meta doesn't exist.
+               }
+               $remaining = floatval($remaining_meta);
+
+               
+                 $balance = floatval(get_post_meta($card->ID, "_ywgc_amount_total", true));  // This is initial balance
+                 $remaining = floatval(get_post_meta($card->ID, "_ywgc_balance_total", true)); // This is remaining
+
 
                   $searchGiftCardRaw = $this->search($servicePOSGiftcards, 'giftcardno', $this->codeToServicePos($code));
                   $searchGiftCardCount = count($searchGiftCardRaw);
